@@ -1,18 +1,9 @@
 import "./SDK.js";
 
-
-export const InitStatus = () =>
+export const InitStatus = (appId) =>
   new Promise((resolve) => {
-    // window.fbAsyncInit = function() {
-    //   window.FB.init({
-    //     appId            : "1652952081803511",
-    //     autoLogAppEvents : true,
-    //     xfbml            : true,
-    //     version          : "v16.0"
-    //   });
-    // };
     window.FB.init({
-      appId: "1105528194174599", // appid
+      appId, // appid
       cookie: true,
       xfbml: true,
       version: "v16.0"

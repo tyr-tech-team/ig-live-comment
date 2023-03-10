@@ -1,9 +1,4 @@
 import { InitStatus, Login, Logout, Api } from "./fb-basic-api";
-// import { isEmpty } from "@/plugins/utils"
-// import store from "@/store";
-
-// const fbRole = "user_gender, email, pages_manage_ads, pages_manage_metadata, pages_read_engagement, pages_show_list, public_profile, pages_messaging";
-// const fbItem = "name,id,gender,email,accounts{picture,access_token,id,tasks,name}"
 
 // message
 const ResMsg = (fnName, res, closeMask = false) => {
@@ -17,34 +12,19 @@ const ResMsg = (fnName, res, closeMask = false) => {
   if (fnName === "noCheck" && res.status === "unknown") _res.status.isPass = false;
   if (fnName === "Logout") _res.status.isPass = true;
   if (fnName === "Login" && _res.status.isPass === true) {
-    // const roles = store.getters.fbRole.replace(/\s+/g, "").split(",");
-    // const userPassRoles = _res.data.grantedScopes.replace(/\s+/g, "").split(",");
-    // let allpass = true;
-    // roles.forEach((role) => {
-    //   if (!userPassRoles.find((item) => item === role)) {
-    //     // Message.error({
-    //     //   content: `${role}粉專帳號權限不足`,
-    //     //   duration: 3
-    //     // });
-    //     allpass = false;
-    //   }
-    // });
-    // if (!allpass) {
-    //   await Freed();
-    //   _res.status.isPass = 1;
-    // }
+    //
   }
   return _res;
 };
 // --------------------------------------------------------
 // 狀態
-export const Status = async () => {
-  const statusRes = await InitStatus();
+export const Status = async (appId) => {
+  const statusRes = await InitStatus(appId);
   return ResMsg("InitStatus", statusRes);
 };
 // --------------------------------------------------------
 // 授權
-export const Authorization = async () => {
+export const Authorization = async (appId) => {
   const params = {
     return_scopes: true,
     scope: [
@@ -53,22 +33,25 @@ export const Authorization = async () => {
       "pages_messaging",
       "instagram_basic",
       "pages_read_engagement",
-      "instagram_shopping_tag_products",
+      "business_management",
     ].join(",")
   };
-  console.log(params);
-  const statusRes = await InitStatus();
+  const statusRes = await InitStatus(appId);
   // 如果狀態失效
+  console.log("1");
   if (statusRes.status !== "connected") {
+    console.log("1-1");
     const res = await Login(params);
+    console.log("2");
     return ResMsg("Login", res);
   }
+  console.log("3");
   return ResMsg("InitStatus", statusRes);
 };
 // --------------------------------------------------------
 // 釋放
-export const Freed = async () => {
-  const statusRes = await InitStatus();
+export const Freed = async (appId) => {
+  const statusRes = await InitStatus(appId);
   // 如果是有效狀態
   if (statusRes.status === "connected") {
     const res = await Logout();
@@ -78,8 +61,8 @@ export const Freed = async () => {
 };
 // --------------------------------------------------------
 // 資訊
-export const Info = async () => {
-  const statusRes = await InitStatus();
+export const Info = async (appId) => {
+  const statusRes = await InitStatus(appId);
   if (statusRes.status === "connected") {
     const param = {
       url: "/me?fields=id,first_name,last_name,middle_name,name,name_format,picture,email,short_name" // 索取欄位  public_profile：id,first_name,last_name,middle_name,name,name_format,picture,email,short_name
@@ -93,8 +76,8 @@ export const Info = async () => {
 };
 // --------------------------------------------------------
 // 重新授權
-export const ReAuthorization = async () => {
-  await Freed();
+export const ReAuthorization = async (appId) => {
+  await Freed(appId);
   const res = await Authorization();
   return res;
 };
@@ -113,4 +96,48 @@ export const FbPageList = async () => {
   }
   return ResMsg("InitStatus", statusRes);
 };
-
+// -----------
+// 取得IG商業帳戶
+export const IGBusinessInfo = async (pageId) => {
+  const statusRes = await InitStatus();
+  if (statusRes.status === "connected") {
+    const param = {
+      url: `/${pageId}?fields=instagram_business_account`
+    };
+    const data = {authResponse: null, status: "connected"};
+    const res = await Api(param);
+    if (res) data.authResponse = res;
+    return ResMsg("Api", data);
+  }
+  return ResMsg("InitStatus", statusRes);
+};
+// -----------
+// 取得IG直撥列表
+export const IGLiveList = async (pageId) => {
+  const statusRes = await InitStatus();
+  if (statusRes.status === "connected") {
+    const param = {
+      url: `/${pageId}/live_media`
+    };
+    const data = {authResponse: null, status: "connected"};
+    const res = await Api(param);
+    if (res) data.authResponse = res;
+    return ResMsg("Api", data);
+  }
+  return ResMsg("InitStatus", statusRes);
+};
+// -----------
+// 取得IG直撥留言
+export const IGLiveComments = async (mediaId) => {
+  const statusRes = await InitStatus();
+  if (statusRes.status === "connected") {
+    const param = {
+      url: `/${mediaId}/comments?fields=from,text,timestamp,user,username`
+    };
+    const data = {authResponse: null, status: "connected"};
+    const res = await Api(param);
+    if (res) data.authResponse = res;
+    return ResMsg("Api", data);
+  }
+  return ResMsg("InitStatus", statusRes);
+};
