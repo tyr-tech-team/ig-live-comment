@@ -34,10 +34,10 @@
   .row-area
     .comment-list
       .comment-item
-        p 留言時間
-        p 姓名
-        p 使用者ID
-        p 留言內容
+        p {{"留言時間"}}
+        p {{"姓名"}}
+        p {{"使用者ID"}}
+        p {{"留言內容"}}
       .comment-item(v-for="commentItem of commentList" :key="commentItem.id")
         p {{ commentItem.timestamp }}
         p {{ commentItem.username }}
