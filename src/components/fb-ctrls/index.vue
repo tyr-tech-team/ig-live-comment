@@ -4,11 +4,36 @@
   .item-row
     p {{"App ID："}}
     aInput(v-model:value="appId" style="width: 200px" size="small")
-    aButton(type="primary" @click="ClickAuthorizationBtn" size="small") {{"授權"}}
-    aButton(@click="DemoTest" size="small") {{"狀態"}}
+  .item-row 
+    aButton(type="primary" size="small" @click="ClickAuthorizationBtn") {{"授權"}}
+    aButton(@click="ClickStatusBtn" size="small") {{"狀態"}}
     aButton(@click="ClickInfoBtn" size="small") {{"資訊"}}
     aButton(@click="ClickReAuthorizationBtn" size="small") {{"重新授權"}}
     aButton(@click="ClickFreedBtn" type="primary" danger size="small") {{"釋放"}}
+  .item-row
+    aButton(type="primary" size="small" @click="ClickFbPageListBtn") {{"取得粉專列表"}}
+    p {{"選擇粉專："}}
+    aSelect(
+      v-model:value="selectPageId"
+      size="small"
+      style="width: 200px"
+      :options="pageList"
+    )
+  .item-row
+    aButton(type="primary" size="small" @click="ClickIGBusinessInfoBtn") {{"取得IG商業帳戶列表"}}
+    p {{`商業帳戶 ID：${selectBusinessId}`}}
+  .item-row
+    aButton(type="primary" size="small" @click="ClickIGLiveListBtn") {{"取得IG直撥列表"}}
+    p {{"直撥列表："}}
+    aSelect(
+      v-model:value="selectLiveMediaId"
+      size="small"
+      style="width: 200px"
+      :options="liveList"
+    )
+  .item-row
+    aButton(type="primary" size="small" @click="ClickIGLiveCommentsBtn") {{"取得IG直撥留言"}}
+  pre {{ commentList }}
 </template>
 
 <script setup>
@@ -34,16 +59,39 @@ const ClickFreedBtn = async() => fbRes.value.res = await $fb.Freed(appId.value);
 const ClickInfoBtn = async() => fbRes.value.res = await $fb.Info(appId.value);
 // 取得重新授權按鈕
 const ClickReAuthorizationBtn = async() => fbRes.value.res = await $fb.Authorization(appId.value);
-const DemoTest = () =>  {
-  console.log("test");
+// --------------------------------------------
+//  取得粉專列表
+const ClickFbPageListBtn = async() => {
+  fbRes.value.res = await $fb.FbPageList();
+  pageList.value = fbRes.value.res.data.data.map((item) => {
+    return {label: item.name, value: item.id};
+  });
+  console.log("pageList", pageList);
 };
+
+//  取得IG商業帳戶
+const ClickIGBusinessInfoBtn = async() => {
+  if (!selectPageId.value) return;
+  fbRes.value.res = await $fb.IGBusinessInfo(selectPageId.value);
+  selectBusinessId.value = fbRes.value.res.data.instagram_business_account.id;
+
+};
+
+//  取得直撥列表
+const ClickIGLiveListBtn = async() => {
+  if (!selectBusinessId.value) return;
+  fbRes.value.res = await $fb.IGLiveList(selectBusinessId.value);
+  liveList.value = fbRes.value.res.data.data.map((item, index) => {
+    return {label: `${index}直撥`, value: item.id };
+  });
+};
+
 </script>
 
 <style lang="scss" scoped>
 // 佈局
 #FbCtrls {
   font-weight: bold;
-  // color: #666;
 }
 // 組件
 #FbCtrls {
