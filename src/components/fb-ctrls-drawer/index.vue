@@ -14,14 +14,14 @@ aDrawer(
       p {{"App ID："}}
       aInput(v-model:value="appId" style="width: 200px" size="small")
     .item-row 
-      aButton(size="small" type="primary" @click="ClickAuthorizationBtn") {{"授權"}}
-      aButton(size="small" @click="ClickStatusBtn") {{"狀態"}}
-      aButton(size="small" @click="ClickInfoBtn") {{"資訊"}}
-      aButton(size="small" @click="ClickReAuthorizationBtn") {{"重新授權"}}
-      aButton(size="small" type="primary" danger @click="ClickFreedBtn") {{"釋放"}}
-      aButton(size="small" type="primary" @click="DefaultFlow"  ) {{"預設流程"}}
+      aButton(size="small" type="primary" @click="ClickAuthorization") {{"授權"}}
+      aButton(size="small" @click="ClickStatus") {{"狀態"}}
+      aButton(size="small" @click="ClickInfo") {{"資訊"}}
+      aButton(size="small" @click="ClickReAuthorization") {{"重新授權"}}
+      aButton(size="small" type="primary" danger @click="ClickFreed") {{"釋放"}}
+      aButton(size="small" type="primary" @click="DefaultFlow") {{"預設流程"}}
     .item-row
-      aButton(type="primary" size="small" @click="GetFbPageListBtn") {{"取得粉專列表"}}
+      aButton(type="primary" size="small" @click="GetFbPageList") {{"取得粉專列表"}}
       p {{"選擇粉專："}}
       aSelect(
         v-model:value="selectPageId"
@@ -42,7 +42,7 @@ aDrawer(
         :options="liveList"
       )
     .item-row
-      aButton(type="primary" size="small" @click="ClickIGLiveCommentsBtn") {{"取得IG直撥留言"}}
+      aButton(type="primary" size="small" @click="IGLiveCommentsBtn") {{"取得IG直撥留言"}}
     pre {{ commentList }}
 </template>
 
@@ -82,32 +82,33 @@ const EmitUpdateIsOpen = (value) => {
 
 // Flow ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const DefaultFlow = async () => {
-  console.log(1);
+  console.log("授權");
   // 授權
-  if (!await ClickAuthorizationBtn()) return;
-  console.log(2);
+  if (!await ClickAuthorization()) return;
+  console.log("取得粉專列表");
   // 取得粉專列表
-  if (!await GetFbPageListBtn()) return;
-  console.log(3);
+  if (!await GetFbPageList()) return;
+  console.log("檢查粉專");
   // 檢查粉專
   if (!pageList.value[0]) return;
-  console.log(4);
+  console.log("選定第一個粉專");
   // 選定第一個粉專
   selectPageId.value = pageList.value[0].value;
-  console.log(5);
+  console.log("取得 IG 商業 ID");
   // 取得 IG 商業 ID
   if (!await GetIGBusinessInfoBtn()) return;
-  console.log(6);
-  // 取得 直撥列表
+  console.log("取得直撥列表");
+  // 取得直撥列表
   if (!await GetIGLiveListBtn()) return;
-  console.log(7);
-  // 選定第一個直撥
+  console.log("檢查直撥");
   if (!liveList.value[0]) return;
+  console.log("選定第一個直撥");
+  // 選定第一個直撥
   selectLiveMediaId.value = liveList.value[0].value;
 };
 // Function ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 取得狀態
-const ClickStatusBtn = async () => {
+const ClickStatus = async () => {
   const {status: { isPass }} = await $fb.Status(appId.value);
   if (isPass) {
     message.success("取得狀態成功");
@@ -118,7 +119,7 @@ const ClickStatusBtn = async () => {
 };
 
 // 取得授權
-const ClickAuthorizationBtn = async() => {
+const ClickAuthorization = async() => {
   const {status: { isPass }} = await $fb.Authorization(appId.value);
   if (isPass) {
     message.success("授權成功");
@@ -129,7 +130,7 @@ const ClickAuthorizationBtn = async() => {
 };
 
 // 釋放
-const ClickFreedBtn = async() => {
+const ClickFreed = async() => {
   const {status: { isPass }} = await $fb.Freed(appId.value);
   if (isPass) {
     message.success("權限釋放成功");
@@ -140,7 +141,7 @@ const ClickFreedBtn = async() => {
 };
 
 // 取得會員資訊
-const ClickInfoBtn = async() => {
+const ClickInfo = async() => {
   const {status: { isPass }} = await $fb.Info(appId.value);
   if (isPass) {
     message.success("取得資訊成功");
@@ -151,7 +152,7 @@ const ClickInfoBtn = async() => {
 };
 
 // 取得重新授權按鈕
-const ClickReAuthorizationBtn = async() => {
+const ClickReAuthorization = async() => {
   const {status: { isPass }} = await $fb.Authorization(appId.value);
   if (isPass) {
     message.success("重新授權成功");
@@ -162,7 +163,7 @@ const ClickReAuthorizationBtn = async() => {
 };
 
 //  取得粉專列表
-const GetFbPageListBtn = async() => {
+const GetFbPageList = async() => {
   const {data, status: { isPass }} = await $fb.FbPageList();
 
   if (!isPass) {
@@ -202,14 +203,23 @@ const GetIGLiveListBtn = async() => {
 };
 
 //  取得直撥留言
-const ClickIGLiveCommentsBtn = async() => {
+const IGLiveCommentsBtn = async() => {
   if (!selectLiveMediaId.value) return false;
   const {data, status: { isPass }} = await $fb.IGLiveComments(selectLiveMediaId.value);
   if (!isPass) {
     message.error("取得留言失敗");
     return false;
   }
-  commentList.value = data.data;
+  console.log(data);
+  commentList.value = data.data.map((i) => {
+    return {
+      id: i.id,
+      userId: i.id,
+      userName: i.username,
+      createAt: i.timestamp,
+      text: i.text,
+    };
+  });
   return true;
 };
 </script>
