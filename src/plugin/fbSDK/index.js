@@ -38,28 +38,21 @@ export const Authorization = async (appId) => {
   };
   const statusRes = await InitStatus(appId);
   // 如果狀態失效
-  console.log("1");
   if (statusRes.status !== "connected") {
-    console.log("1-1");
     const res = await Login(params);
-    console.log("2");
     return ResMsg("Login", res);
   }
-  console.log("3");
   return ResMsg("InitStatus", statusRes);
 };
 // --------------------------------------------------------
 // 釋放
 export const Freed = async (appId) => {
-  console.log("freed");
   const statusRes = await InitStatus(appId);
   // 如果是有效狀態
   if (statusRes.status === "connected") {
-    console.log("1");
     const res = await Logout();
     return ResMsg("Logout", res);
   }
-  console.log("2");
   return ResMsg("noCheck", statusRes);
 };
 // --------------------------------------------------------
