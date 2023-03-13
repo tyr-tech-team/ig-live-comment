@@ -76,7 +76,7 @@ const ClickAuthorizationBtn = async() => fbRes.value.res = await $fb.Authorizati
 const ClickFreedBtn = async() => fbRes.value.res = await $fb.Freed(appId.value);
 // 取得會員資訊
 const ClickInfoBtn = async() => fbRes.value.res = await $fb.Info(appId.value);
-//  取得重新授權按鈕
+// 取得重新授權按鈕
 const ClickReAuthorizationBtn = async() => fbRes.value.res = await $fb.Authorization(appId.value);
 // ------------------------------------------------------------------
 //  取得粉專列表

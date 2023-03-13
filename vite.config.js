@@ -36,6 +36,14 @@ export default defineConfig({
         additionalData: `
           @import "./src/assets/styles/scss/index.scss";
         `
+      },
+      less: {
+        javascriptEnabled: true,
+        modifyVars: {
+          "primary-color": "#5395CC",
+          "error-color": "#C4484E",
+          "border-radius-base": "4px",
+        },
       }
     }
   }
