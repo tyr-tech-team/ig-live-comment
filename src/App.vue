@@ -1,6 +1,7 @@
 <template lang="pug">
 //- 請填寫功能描述👈
 #Home
+  FbCtrls
   .row-area
     p {{"AppId："}}
     aInput(v-model:value="appId" style="width: 200px")
@@ -44,12 +45,13 @@
         p {{ commentItem.user.id }}
         .text {{ commentItem.text }}
     //- pre {{ commentList }}
-  //- pre {{ fbRes.res }}
+  pre {{ fbRes.res }}
   //- pre {{ pageList }}
   //- pre {{ selectPageId }}
 </template>
 
 <script setup>
+import FbCtrls from "@/components/fb-ctrls/index.vue";
 import { inject, reactive, ref } from "vue";
 const $fb = inject("$fb");
 // ------------------------------------------------------------------
@@ -116,12 +118,10 @@ const ClickIGLiveCommentsBtn = async() => {
 <style lang="scss" scoped>
 // 佈局
 #Home {
+  
 }
 // 組件
 #Home {
-  p {
-    margin: 0;
-  }
   .row-area {
     padding: 5px;
     display: flex;
