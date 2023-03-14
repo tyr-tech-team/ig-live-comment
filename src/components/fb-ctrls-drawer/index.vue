@@ -43,32 +43,44 @@ aDrawer(
       )
     .item-row
       aButton(type="primary" size="small" @click="IGLiveCommentsBtn") {{"取得IG直撥留言"}}
-    pre {{ commentList }}
+    .table
+      .table-row.table-header
+        p {{"Time"}}
+        p {{"User"}}
+        p {{"Text"}}
+      .table-row(v-for="commentItem of commentList" :key="commentList.id")
+        p {{ commentItem.createTime }}
+        p {{ commentItem.userName }}
+        p {{ commentItem.text }}
+      .no-data 
+        p {{ "NO DATA" }}
+    //- pre {{ commentList }}
 </template>
 
 <script setup>
-import { inject, ref } from "vue";
+import { ref, getCurrentInstance } from "vue";
 import { message } from "ant-design-vue";
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const props = defineProps(
-  {
-    isOpen: Boolean
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    required: true,
+    default: false
   }
-);
-const $fb = inject("$fb");
+});
+const {proxy: {$fb, $moment}} = getCurrentInstance();
 const emit = defineEmits(["update:isOpen"]);
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const openDrawer =ref(true); // 開啟抽屜
 const fbRes = ref({res: null});  // 回傳
-let appId = ref("1105528194174599"); // FB 應用 ID
-let pageList = ref([]); // 粉專列表
-let liveList = ref([]); // 直撥列表
-let commentList = ref([]); // 留言列表
-let selectPageId = ref(""); // 選中粉專
-let selectBusinessId = ref(""); // 選中IG商業帳戶(專業帳戶)ID
-let selectLiveMediaId = ref(""); // 選中直撥
+const appId = ref("1105528194174599"); // FB 應用 ID
+const pageList = ref([]); // 粉專列表
+const liveList = ref([]); // 直撥列表
+const commentList = ref([]); // 留言列表
+const selectPageId = ref(""); // 選中粉專
+const selectBusinessId = ref(""); // 選中IG商業帳戶(專業帳戶)ID
+const selectLiveMediaId = ref(""); // 選中直撥
 
 // Init ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
@@ -216,12 +228,23 @@ const IGLiveCommentsBtn = async() => {
       id: i.id,
       userId: i.id,
       userName: i.username,
-      createAt: i.timestamp,
+      createRfc: i.timestamp,
+      createTime: Rfc3339ToDay(i.timestamp,"HH:mm:ss"),
+      timestamp: DayToNum(i.timestamp),
       text: i.text,
     };
   });
   return true;
 };
+
+// 日期 轉 時間戳記
+const DayToNum = (val) => $moment(val).unix();
+const NumToDay = (val, format = "YYYY/MM/DD HH:mm:ss") => $moment.unix(val).utcOffset(8).format(format);
+const Rfc3339ToDay = (date, format = "YYYY/MM/DD") => {
+  if (!date) return "";
+  return $moment(date).format(format);
+};
+const DayToRfc3339 = (rfc) => $moment(rfc).format();
 </script>
 
 <style lang="scss" scoped>
@@ -236,7 +259,45 @@ const IGLiveCommentsBtn = async() => {
     display: flex;
     align-items: center;
     gap: 10px;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid #eee;
+  }
+  .table {
+    margin-top: 10px;
+    max-height: 200px;
+    position: relative;
+    overflow: auto;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    .table-header {
+      position: sticky;
+      top: 0;
+      background: #EFF1F1;
+
+    }
+  }
+  .table-row {
+    display: grid;
+    grid-template-columns: 65px 120px 1fr;
+    &:not(:last-child) {
+      border-bottom: 1px solid #ccc;
+    }
+    // gap: 5px;
+    p {
+      font-weight: 400;
+      font-size: 12px;;
+      padding: 2px 5px;
+      word-break: break-all;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      box-sizing: border-box;
+      &:not(:last-child) {
+        border-right: 1px solid #ccc;
+      }
+    }
+  }
+  .no-data {
+    text-align: center;
+    padding: 10px;
   }
 }
 </style>

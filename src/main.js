@@ -2,12 +2,12 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import * as $fbFn from "@/plugin/fbSDK";
 import antd from "@/plugin/antd";
+import moment from "moment";
 import App from "./App.vue";
 
 const app = createApp(App);
-app.provide("$fb", $fbFn);
-
+app.config.globalProperties.$fb = $fbFn;
+app.config.globalProperties.$moment= moment;
 app.use(createPinia());
 app.use(antd);
-console.log(app);
 app.mount("#app");
