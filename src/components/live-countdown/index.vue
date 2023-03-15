@@ -8,13 +8,13 @@
         .row-item
           aInputNumber(v-model:value="prepareM" :disabled="isLock" :max="60" :min="0" style="width: 60px")
           .colon {{":"}}
-          aInputNumber(v-model:value="prepareS" :disabled="isLock" :max="60" :min="0" style="width: 60px")
+          aInputNumber(v-model:value="prepareS" :disabled="isLock" :max="59" :min="0" style="width: 60px")
       .time-set
         .time-label {{"先搶先贏倒數設定："}}
         .row-item
           aInputNumber(v-model:value="countdownM" :disabled="isLock" :max="60" :min="0" style="width: 60px")
           .colon {{":"}}
-          aInputNumber(v-model:value="countdownS" :disabled="isLock" :max="60" :min="0" style="width: 60px")
+          aInputNumber(v-model:value="countdownS" :disabled="isLock" :max="59" :min="0" style="width: 60px")
     .row-item
       aButton(@click="ClickStart")
         CaretRightOutlined
