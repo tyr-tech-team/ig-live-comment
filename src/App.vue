@@ -3,7 +3,7 @@
 #Home
   .row-item
     aButton(type="primary" @click="OpenCtrlDrawer") {{"FB 控制項"}}
-    aButton(type="primary" @click="") {{"新增計時器"}}
+    //- aButton(type="primary" @click="") {{"新增計時器"}}
   LiveCountdown
 //------------------
 FbCtrlsDrawer(v-model:isOpen="openDrawer")
@@ -26,7 +26,7 @@ const OpenCtrlDrawer = async () => {
 <style lang="scss" scoped>
 // 佈局
 #Home {
-  padding: 5px;
+  padding: 20px;
   
 }
 // 組件

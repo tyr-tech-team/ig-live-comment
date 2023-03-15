@@ -2,27 +2,31 @@
 //- 直撥倒數計時卡片
 #CountdownCard
   .countdown-layout
-    .card-item
-      .num-box(v-show="showMinute")
-        transition-group(name="slide-up")
-          .num(v-for="n of 10" :key="n" v-show="m0===n-1") {{n-1}}
-      .num-box(v-show="showMinute")
-        transition-group(name="slide-up")
-          .num(v-for="n of 10" :key="n" v-show="m1===n-1") {{n-1}}
-      .colon(v-show="showMinute") {{":"}}
-      .num-box
-        transition-group(name="slide-up")
-          .num(v-for="n of 10" :key="n" v-show="s0===n-1") {{n-1}}
-      .num-box
-        transition-group(name="slide-up")
-          .num(v-for="n of 10" :key="n" v-show="s1===n-1") {{n-1}}
-    .ctrl-bar
-      aButton(size="small" type="primary" @click="RefStart")
-        CaretRightOutlined
-      aButton(size="small" type="primary" @click="RefPause")
-        PauseOutlined
-      aButton(size="small" type="primary" @click="RefInit")
-        UndoOutlined
+    .slogan {{ sloganText }}
+    
+    .time-area
+      .time-box(:class="{'urgent': isUrgent}")
+        .pause(v-show="isPause") {{ "暫停" }}
+        .num-box(v-show="showMinute")
+          transition-group(name="slide-up")
+            .num(v-for="n of 10" :key="n" v-show="m0===n-1") {{n-1}}
+        .num-box(v-show="showMinute")
+          transition-group(name="slide-up")
+            .num(v-for="n of 10" :key="n" v-show="m1===n-1") {{n-1}}
+        .colon(v-show="showMinute") {{":"}}
+        .num-box
+          transition-group(name="slide-up")
+            .num(v-for="n of 10" :key="n" v-show="s0===n-1") {{n-1}}
+        .num-box
+          transition-group(name="slide-up")
+            .num(v-for="n of 10" :key="n" v-show="s1===n-1") {{n-1}}
+    //- .ctrl-bar
+    //-   aButton(size="small" type="primary" @click="RefStart")
+    //-     CaretRightOutlined
+    //-   aButton(size="small" type="primary" @click="RefPause")
+    //-     PauseOutlined
+    //-   aButton(size="small" type="primary" @click="RefInit")
+    //-     UndoOutlined
 </template>
 
 <script setup>
@@ -31,24 +35,33 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const props = defineProps({
-  countdownSecond: {
+  countdownSecond: { // 倒數秒數
     type: Number,
     default: 0
+  },
+  sloganText: { // 口號
+    type: String,
+    default: ""
+  },
+  urgentSec: {
+    type: Number,
+    default: 59
   }
 });
 const emit = defineEmits(["on-complete"]);
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const second = ref(3);
+const second = ref(0);
 const m1 = ref(0);
 const m0 = ref(0);
 const s1 = ref(0);
 const s0 = ref(0);
+const isPause = ref(false);
 
 let timeInterval = null;
-let isPause = false;
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 顯示分鐘模組
-const showMinute = computed(() => props.countdownSecond >= 60);
+const showMinute = computed(() => second.value >= 60); // 60 秒內不呈現分鐘
+const isUrgent = computed(() => second.value <= props.urgentSec); // 60 秒內不呈現分鐘
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 onMounted(()=>{
   RefInit();
@@ -62,16 +75,17 @@ const RefInit = () => {
   DeleteInterval();
   second.value = props.countdownSecond;
   UpdateCountdownNum();
-  isPause = false;
+  isPause.value = false;
 };
 // 開始
 const RefStart = () => {
+  if (props.countdownSecond === 0) return;
   if (!timeInterval) CreateInterval();
-  isPause = false;
+  isPause.value = false;
 };
 // 暫停
 const RefPause = () => {
-  isPause = true;
+  isPause.value = true;
 };
 defineExpose({ RefInit, RefStart, RefPause });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -83,7 +97,7 @@ const EmitComplete = () => {
 // 開始循環
 const CreateInterval = () => {
   timeInterval = setInterval(() => {
-    if (!isPause) {
+    if (!isPause.value) {
       ReduceSecond();
     }
   },1000);
@@ -122,25 +136,60 @@ const UpdateCountdownNum = () => {
 <style lang="scss" scoped>
 // 佈局
 #CountdownCard {
+  min-width: 200px;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #ccc;
+  padding: 5px 10px 10px 10px;
+  border-radius: 4px;;
   .countdown-layout {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     gap: 5px;
+    .time-area {
+      display: flex;
+      justify-content: center;
+    }
   }
 }
 // 組件
 #CountdownCard {
-  .card-item {
-    padding: 5px 10px;
+  .slogan {
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    padding-bottom: 2px;
+    letter-spacing: 2px;;
+    color: #3a4c59;
+  }
+  .pause {
+    position: absolute;
+    width: 100%;
+    height: 20px;
+    left: 0;
+    top: 0;
+    background-color: #7A8994D7;
+    font-size: 14px;
+    line-height: 15px;
+    font-weight: 400;
+    letter-spacing: 20px;
+    padding-left: 20px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white
+  }.time-area
+  .time-box {
+    overflow: hidden;
+    position: relative;
+    padding: 15px 10px;
     border-radius: 5px;
     display: flex;
     font-size: 50px;
     font-weight: bold;
     line-height: 50px;
-    color: white;
-    background-color: #76838a;
+    color: #3a4c59;
+    background-color: #E0E6EA;
     .colon {
       text-align: center;
       transform: translateY(-3px);
@@ -159,6 +208,9 @@ const UpdateCountdownNum = () => {
   .ctrl-bar {
     display: flex;
     gap: 5px;
+  }
+  .urgent {
+    background-color: #FFD1D1 !important;
   }
 }
 
