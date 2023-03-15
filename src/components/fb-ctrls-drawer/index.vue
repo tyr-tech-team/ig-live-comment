@@ -33,8 +33,8 @@ aDrawer(
       aButton(type="primary" size="small" @click="GetIGBusinessInfoBtn") {{"取得IG商業帳戶列表"}}
       p {{`商業帳戶 ID：${selectBusinessId}`}}
     .item-row
-      aButton(type="primary" size="small" @click="GetIGLiveListBtn") {{"取得IG直撥列表"}}
-      p {{"直撥列表："}}
+      aButton(type="primary" size="small" @click="GetIGLiveListBtn") {{"取得IG直播列表"}}
+      p {{"直播列表："}}
       aSelect(
         v-model:value="selectLiveMediaId"
         size="small"
@@ -42,7 +42,7 @@ aDrawer(
         :options="liveList"
       )
     .item-row
-      aButton(type="primary" size="small" @click="IGLiveCommentsBtn") {{"取得IG直撥留言"}}
+      aButton(type="primary" size="small" @click="IGLiveCommentsBtn") {{"取得IG直播留言"}}
     .table
       .table-row.table-header
         p {{"Time"}}
@@ -76,11 +76,11 @@ const emit = defineEmits(["update:isOpen"]);
 const fbRes = ref({res: null});  // 回傳
 const appId = ref("1105528194174599"); // FB 應用 ID
 const pageList = ref([]); // 粉專列表
-const liveList = ref([]); // 直撥列表
+const liveList = ref([]); // 直播列表
 const commentList = ref([]); // 留言列表
 const selectPageId = ref(""); // 選中粉專
 const selectBusinessId = ref(""); // 選中IG商業帳戶(專業帳戶)ID
-const selectLiveMediaId = ref(""); // 選中直撥
+const selectLiveMediaId = ref(""); // 選中直播
 
 // Init ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
@@ -109,13 +109,13 @@ const DefaultFlow = async () => {
   console.log("取得 IG 商業 ID");
   // 取得 IG 商業 ID
   if (!await GetIGBusinessInfoBtn()) return;
-  console.log("取得直撥列表");
-  // 取得直撥列表
+  console.log("取得直播列表");
+  // 取得直播列表
   if (!await GetIGLiveListBtn()) return;
-  console.log("檢查直撥");
+  console.log("檢查直播");
   if (!liveList.value[0]) return;
-  console.log("選定第一個直撥");
-  // 選定第一個直撥
+  console.log("選定第一個直播");
+  // 選定第一個直播
   selectLiveMediaId.value = liveList.value[0].value;
 };
 // Function ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -200,21 +200,21 @@ const GetIGBusinessInfoBtn = async() => {
   return true;
 };
 
-//  取得直撥列表
+//  取得直播列表
 const GetIGLiveListBtn = async() => {
   if (!selectBusinessId.value) return false;
   const {data, status: { isPass }} = await $fb.IGLiveList(selectBusinessId.value);
   if (!isPass) {
-    message.error("取得直撥列表失敗");
+    message.error("取得直播列表失敗");
     return false;
   }
   liveList.value = data.data.map((item, index) => {
-    return {label: `${index}直撥`, value: item.id };
+    return {label: `${index}直播`, value: item.id };
   });
   return true;
 };
 
-//  取得直撥留言
+//  取得直播留言
 const IGLiveCommentsBtn = async() => {
   if (!selectLiveMediaId.value) return false;
   const {data, status: { isPass }} = await $fb.IGLiveComments(selectLiveMediaId.value);

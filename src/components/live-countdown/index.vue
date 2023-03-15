@@ -1,5 +1,5 @@
 <template lang="pug">
-//- 直撥倒數計時
+//- 直播倒數計時
 #LiveCountdown
   .time-ctrl
     .time-card

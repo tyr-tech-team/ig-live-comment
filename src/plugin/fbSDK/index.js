@@ -108,7 +108,7 @@ export const IGBusinessInfo = async (pageId) => {
   return ResMsg("InitStatus", statusRes);
 };
 // -----------
-// 取得IG直撥列表
+// 取得IG直播列表
 export const IGLiveList = async (pageId) => {
   const statusRes = await InitStatus();
   if (statusRes.status === "connected") {
@@ -123,7 +123,7 @@ export const IGLiveList = async (pageId) => {
   return ResMsg("InitStatus", statusRes);
 };
 // -----------
-// 取得IG直撥留言
+// 取得IG直播留言
 export const IGLiveComments = async (mediaId) => {
   const statusRes = await InitStatus();
   if (statusRes.status === "connected") {
