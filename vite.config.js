@@ -9,7 +9,7 @@ import path from "path"; // https use
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  // base: "/ttt/", // 網域目錄
+  base: "/ig-live-comment/", // github page use
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url))
