@@ -1,7 +1,7 @@
 <template lang="pug">
 //- 請填寫功能描述👈
 #Home
-  .row-item
+  //- .row-item
     aButton(type="primary" @click="OpenCtrlDrawer") {{"FB 控制項"}}
     //- aButton(type="primary" @click="") {{"新增計時器"}}
   LiveCountdown
