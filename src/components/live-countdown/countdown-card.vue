@@ -88,6 +88,10 @@ const RefPause = () => {
 };
 defineExpose({ RefInit, RefStart, RefPause });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 初次開始
+const EmitFirstStart = () => {
+  emit("on-first-start");
+};
 // 完成
 const EmitComplete = () => {
   emit("on-complete");
@@ -95,6 +99,7 @@ const EmitComplete = () => {
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 開始循環
 const CreateInterval = () => {
+  EmitFirstStart();
   timeInterval = setInterval(() => {
     if (!isPause.value) {
       ReduceSecond();

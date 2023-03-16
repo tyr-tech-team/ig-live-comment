@@ -30,6 +30,7 @@
       sloganText="預備備！"
       :countdownSecond="prepareSecond"
       :urgentSec="10"
+      @on-first-start="OnPrepareStart"
       @on-complete="OnPrepareComplete"
     )
     CountdownCard(
@@ -64,6 +65,11 @@ const isLock = ref(false);
 const uuid = ref("");
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const emit = defineEmits(["on-start", "on-complete", "on-cancel"]);
+//  新增
+const EmitCreate = () => {
+  emit("on-create", uuid.value);
+};
+
 // 開始
 const EmitStart = () => {
   emit("on-start", uuid.value);
@@ -139,6 +145,7 @@ const ClickPause = () => {
 
 // 恢復
 const ClickReset = () => {
+  console.log("cancel", uuid.value);
   if (uuid.value) {
     EmitCancel();
     uuid.value = "";
@@ -147,11 +154,15 @@ const ClickReset = () => {
   InitCountdown();
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 預備備第一次開始 
+const OnPrepareStart = () => {
+  uuid.value = CreateUUID();
+  EmitCreate();
+};
 // 預備備 完成
 const OnPrepareComplete = () => {
   isPrepareComplete.value = true;
   nextTick(() => {
-    uuid.value = CreateUUID();
     EmitStart();
     CountdownCard2.value.RefStart();
   });
@@ -211,7 +222,6 @@ InitCountdown();
   }
   .time-card {
     padding: 10px 15px;
-    // border: 1px solid #666;
     border-radius: 4px;;
     background-color: white;
     color: #444;

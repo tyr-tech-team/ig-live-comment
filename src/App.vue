@@ -6,12 +6,13 @@
   .ctrl-box
     .countdown-area
       LiveCountdown(
+        @on-create="CardCreate"
         @on-start="OnCountdownStart"
         @on-complete="OnCountdownComplete"
-        @on-cancel="OnCountdownCancel"
+        @on-cancel="CardDelete"
       )
     .card-area
-      pre {{ commentList }}
+      pre {{ cardList }}
     .comments-area 
       IgCommentsTable(:commentList="commentList")
 //------------------
@@ -30,19 +31,47 @@ const openDrawer =ref(false); // 開啟抽屜
 // 同步訊息列表
 const FbCtrlsDrawer1 = ref(null);
 const commentList = ref([]);
+const currentUUID = ref("");
+const cardList = ref([]);
 nextTick(() => {
   commentList.value = FbCtrlsDrawer1.value.commentList;
 });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 建立新卡片
+const CardCreate = (uuid) => {
+  console.log("create",uuid);
+  currentUUID.value = uuid;
+  cardList.value.unshift({
+    uuid, // 唯一ID
+    startAt: "", // 開始時間
+    endAt: "", // 結束時間
+    increase: 1000
+  });
+};
+
+// 倒數取消後刪除
+const CardDelete = (uuid) => {
+  console.log("cancel", uuid);
+
+  const findIndex = cardList.value.findIndex((i) => i.uuid === uuid);
+
+  if (findIndex > -1)  cardList.value.splice(findIndex, 1);
+};
+
+// 開始正式倒數
 const OnCountdownStart = (uuid) => {
   console.log("start",uuid);
+  const find = cardList.value.find((i) => i.uuid === uuid);
+  if (find) find.startAt = new Date().valueOf();
 };
+
+// 倒數完成
 const OnCountdownComplete = (uuid) => {
   console.log("complete", uuid);
+  const find = cardList.value.find((i) => i.uuid === uuid);
+  if (find) find.endAt = new Date().valueOf();
 };
-const OnCountdownCancel = (uuid) => {
-  console.log("cancel", uuid);
-};
+
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 開啟 FB 控制抽屜
 const OpenFBCtrlDrawer = async () => {
