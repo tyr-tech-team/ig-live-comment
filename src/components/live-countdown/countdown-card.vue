@@ -79,7 +79,6 @@ const RefInit = () => {
 };
 // 開始
 const RefStart = () => {
-  if (props.countdownSecond === 0) return;
   if (!timeInterval) CreateInterval();
   isPause.value = false;
 };

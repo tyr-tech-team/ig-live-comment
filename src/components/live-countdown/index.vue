@@ -50,16 +50,34 @@ import { ref, nextTick } from "vue";
 const CountdownCard1 = ref(null);
 const CountdownCard2 = ref(null);
 
-const prepareM = ref(1);
-const prepareS = ref(0);
-const countdownM = ref(2);
-const countdownS = ref(0);
+const prepareM = ref(0); // 1
+const prepareS = ref(5);
+const countdownM = ref(0); // 2
+const countdownS = ref(5);
 const prepareSecond = ref(0);
 const countdownSecond = ref(0);
 
 const isPrepareComplete = ref(false);
 const isCountdownComplete = ref(false);
 const isLock = ref(false);
+
+const uuid = ref("");
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+const emit = defineEmits(["on-start", "on-complete", "on-cancel"]);
+// 開始
+const EmitStart = () => {
+  emit("on-start", uuid.value);
+};
+
+// 完成
+const EmitComplete = () => {
+  emit("on-complete", uuid.value);
+};
+
+// 取消
+const EmitCancel = () => {
+  emit("on-cancel", uuid.value);
+};
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 倒數計時初始化
 const InitCountdown = () => {
@@ -95,7 +113,7 @@ const ClickStart = () => {
     InitCountdown();
     isLock.value = true;
   }
-  // 預備備未 完成
+  // 預備備 未完成
   if (!isPrepareComplete.value) {
     setTimeout(() => {
       CountdownCard1.value.RefStart();
@@ -110,7 +128,7 @@ const ClickStart = () => {
 
 // 暫停
 const ClickPause = () => {
-  // 預備備未 完成
+  // 預備備 未完成
   if (!isPrepareComplete.value) {
     CountdownCard1.value.RefPause();
     return;
@@ -121,6 +139,10 @@ const ClickPause = () => {
 
 // 恢復
 const ClickReset = () => {
+  if (uuid.value) {
+    EmitCancel();
+    uuid.value = "";
+  }
   isLock.value = false;
   InitCountdown();
 };
@@ -129,16 +151,34 @@ const ClickReset = () => {
 const OnPrepareComplete = () => {
   isPrepareComplete.value = true;
   nextTick(() => {
+    uuid.value = CreateUUID();
+    EmitStart();
     CountdownCard2.value.RefStart();
   });
 }; 
 
 // 先搶先贏 完成
 const OnCountdownComplete = () => {
+  EmitComplete();
+  uuid.value = "";
   isCountdownComplete.value = true;
   isLock.value = false;
 };
 
+// 生成唯一ID
+const CreateUUID = () => {
+  let d = Date.now();
+  if (typeof performance !== "undefined" && typeof performance.now === "function") {
+    d += performance.now(); // use high-precision timer if available
+  }
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    const r = (d + Math.random() * 16) % 16 | 0;
+    d = Math.floor(d / 16);
+    return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+};
+
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 InitCountdown();
 </script>
 

@@ -14,14 +14,14 @@ aDrawer(
       p {{"App ID："}}
       aInput(v-model:value="appId" style="width: 200px" size="small")
     .item-row 
-      aButton(size="small" type="primary" @click="ClickAuthorization") {{"授權"}}
+      aButton(type="primary" @click="DefaultFlow") {{"一鍵運行"}}
+      aButton(size="small"  @click="ClickAuthorization") {{"授權"}}
       aButton(size="small" @click="ClickStatus") {{"狀態"}}
       aButton(size="small" @click="ClickInfo") {{"資訊"}}
       aButton(size="small" @click="ClickReAuthorization") {{"重新授權"}}
-      aButton(size="small" type="primary" danger @click="ClickFreed") {{"釋放"}}
-      aButton(size="small" type="primary" @click="DefaultFlow") {{"預設流程"}}
+      aButton(size="small" danger @click="ClickFreed") {{"釋放"}}
     .item-row
-      aButton(type="primary" size="small" @click="GetFbPageList") {{"取得粉專列表"}}
+      aButton(size="small" @click="GetFbPageList") {{"取得粉專列表"}}
       p {{"選擇粉專："}}
       aSelect(
         v-model:value="selectPageId"
@@ -30,10 +30,10 @@ aDrawer(
         :options="pageList"
       )
     .item-row
-      aButton(type="primary" size="small" @click="GetIGBusinessInfoBtn") {{"取得IG商業帳戶列表"}}
+      aButton(size="small" @click="GetIGBusinessInfoBtn") {{"取得IG商業帳戶列表"}}
       p {{`商業帳戶 ID：${selectBusinessId}`}}
     .item-row
-      aButton(type="primary" size="small" @click="GetIGLiveListBtn") {{"取得IG直播列表"}}
+      aButton(size="small" @click="GetIGLiveListBtn") {{"取得IG直播列表"}}
       p {{"直播列表："}}
       aSelect(
         v-model:value="selectLiveMediaId"
@@ -42,25 +42,18 @@ aDrawer(
         :options="liveList"
       )
     .item-row
-      aButton(type="primary" size="small" @click="IGLiveCommentsBtn") {{"取得IG直播留言"}}
-    .table
-      .table-row.table-header
-        p {{"Time"}}
-        p {{"User"}}
-        p {{"Text"}}
-      .table-row(v-for="commentItem of commentList" :key="commentList.id")
-        p {{ commentItem.createTime }}
-        p {{ commentItem.userName }}
-        p {{ commentItem.text }}
-      .no-data 
-        p {{ "NO DATA" }}
-    //- pre {{ commentList }}
+      aButton(size="small" @click="StratWatchLiveComments") {{"開啟直撥留言監聽"}} 
+      aButton(size="small" danger @click="StopWatchLiveComments") {{"停止直撥留言監聽"}}
+      aButton(size="small" @click="ClearLiveComments") {{"清除監聽資料"}}
+    //- ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+    .status {{`狀態：${isCommentsWatch?'監聽中':'停止監聽'}`}}
+    IgCommentsTable(:commentList="commentList")
 </template>
 
 <script setup>
-import { ref, getCurrentInstance } from "vue";
+import { ref, getCurrentInstance, onUnmounted } from "vue";
 import { message } from "ant-design-vue";
-
+import IgCommentsTable from "./ig-comments-table.vue";
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const props = defineProps({
   isOpen: {
@@ -82,10 +75,17 @@ const selectPageId = ref(""); // 選中粉專
 const selectBusinessId = ref(""); // 選中IG商業帳戶(專業帳戶)ID
 const selectLiveMediaId = ref(""); // 選中直播
 
+let commentsInterval = null; // 取得留言循環
+const isCommentsWatch = ref(false);
+
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+onUnmounted(()=>{
+  DeleteInterval();
+});
 // Init ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
 // Emit ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-// 
+// v-model isOpen update
 const EmitUpdateIsOpen = (value) => {
   emit("update:isOpen", false);
 };
@@ -117,7 +117,52 @@ const DefaultFlow = async () => {
   console.log("選定第一個直播");
   // 選定第一個直播
   selectLiveMediaId.value = liveList.value[0].value;
+  // 開啟直撥監聽
+  StratWatchLiveComments();
 };
+
+// 開啟直撥留言監聽
+const StratWatchLiveComments = () => {
+  if (!selectLiveMediaId.value) return false;
+  CreateInterval();
+};
+
+// 停止直撥留言監聽
+const StopWatchLiveComments = () => {
+  DeleteInterval();
+};
+
+// 清除監聽資料
+const ClearLiveComments = () => {
+  DeleteInterval();
+  commentList.value = [];
+};
+// 合併留言
+const MergeComments = (_commentList) => {
+  for (const _comment of _commentList) {
+    const _findIndex = commentList.value.findIndex((i) => i.id === _comment.id);
+    if (_findIndex >= 0) continue;
+    commentList.value.push(_comment);
+  }
+};
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 開始循環
+const CreateInterval = () => {
+  if (commentsInterval) return;
+  isCommentsWatch.value = true;
+  commentsInterval = setInterval(async() => {
+    const _commentList = await GetIGLiveComments();
+    MergeComments(_commentList);
+  }, 2000);
+};
+
+// 銷毀循環
+const DeleteInterval = () => {
+  isCommentsWatch.value = false;
+  if(commentsInterval) clearInterval(commentsInterval);
+  commentsInterval = null;
+};
+
 // Function ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 取得狀態
 const ClickStatus = async () => {
@@ -215,15 +260,14 @@ const GetIGLiveListBtn = async() => {
 };
 
 //  取得直播留言
-const IGLiveCommentsBtn = async() => {
+const GetIGLiveComments = async() => {
   if (!selectLiveMediaId.value) return false;
   const {data, status: { isPass }} = await $fb.IGLiveComments(selectLiveMediaId.value);
   if (!isPass) {
     message.error("取得留言失敗");
-    return false;
+    return [];
   }
-  console.log(data);
-  commentList.value = data.data.map((i) => {
+  return data.data.map((i) => {
     return {
       id: i.id,
       userId: i.id,
@@ -234,7 +278,6 @@ const IGLiveCommentsBtn = async() => {
       text: i.text,
     };
   });
-  return true;
 };
 
 // 日期 轉 時間戳記
@@ -245,6 +288,8 @@ const Rfc3339ToDay = (date, format = "YYYY/MM/DD") => {
   return $moment(date).format(format);
 };
 const DayToRfc3339 = (rfc) => $moment(rfc).format();
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+defineExpose({ commentList });
 </script>
 
 <style lang="scss" scoped>
@@ -261,43 +306,9 @@ const DayToRfc3339 = (rfc) => $moment(rfc).format();
     gap: 10px;
     border-bottom: 1px solid #eee;
   }
-  .table {
-    margin-top: 10px;
-    max-height: 200px;
-    position: relative;
-    overflow: auto;
-    border: 1px solid #ccc;
-    box-sizing: border-box;
-    .table-header {
-      position: sticky;
-      top: 0;
-      background: #EFF1F1;
-
-    }
-  }
-  .table-row {
-    display: grid;
-    grid-template-columns: 65px 120px 1fr;
-    &:not(:last-child) {
-      border-bottom: 1px solid #ccc;
-    }
-    // gap: 5px;
-    p {
-      font-weight: 400;
-      font-size: 12px;;
-      padding: 2px 5px;
-      word-break: break-all;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      box-sizing: border-box;
-      &:not(:last-child) {
-        border-right: 1px solid #ccc;
-      }
-    }
-  }
-  .no-data {
-    text-align: center;
-    padding: 10px;
+  .status {
+    font-weight: 400;
+    color: #666b69;
   }
 }
 </style>
