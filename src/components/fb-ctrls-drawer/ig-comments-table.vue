@@ -16,8 +16,7 @@
 <script setup>
 const props = defineProps({
   commentList: {
-    type: [],
-    required: true,
+    type: Array,
     default: ()=> ([])
   }
 });

@@ -6,7 +6,6 @@ aDrawer(
   title="FB 控制"
   placement="right"
   width="500"
-  @after-visible-change="afterVisibleChange"
   @close="EmitUpdateIsOpen"
 )
   #FbCtrlsDrawer
@@ -58,12 +57,10 @@ import IgCommentsTable from "./ig-comments-table.vue";
 const props = defineProps({
   isOpen: {
     type: Boolean,
-    required: true,
     default: false
   }
 });
 const {proxy: {$fb, $moment}} = getCurrentInstance();
-const emit = defineEmits(["update:isOpen"]);
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const fbRes = ref({res: null});  // 回傳
@@ -85,6 +82,7 @@ onUnmounted(()=>{
 // Init ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
 // Emit ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+const emit = defineEmits(["update:isOpen"]);
 // v-model isOpen update
 const EmitUpdateIsOpen = (value) => {
   emit("update:isOpen", false);

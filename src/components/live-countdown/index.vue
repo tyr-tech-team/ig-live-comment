@@ -64,7 +64,7 @@ const isLock = ref(false);
 
 const uuid = ref("");
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const emit = defineEmits(["on-start", "on-complete", "on-cancel"]);
+const emit = defineEmits(["on-create", "on-start", "on-complete", "on-cancel"]);
 //  新增
 const EmitCreate = () => {
   emit("on-create", uuid.value);

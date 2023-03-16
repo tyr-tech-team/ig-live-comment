@@ -48,7 +48,6 @@ const props = defineProps({
     default: 59
   }
 });
-const emit = defineEmits(["on-complete"]);
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const second = ref(0);
 const m1 = ref(0);
@@ -88,6 +87,7 @@ const RefPause = () => {
 };
 defineExpose({ RefInit, RefStart, RefPause });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+const emit = defineEmits(["on-complete", "on-first-start"]);
 // 初次開始
 const EmitFirstStart = () => {
   emit("on-first-start");
