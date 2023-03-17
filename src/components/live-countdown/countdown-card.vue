@@ -110,13 +110,14 @@ const DeleteInterval = () => {
 
 // 減少秒數
 const ReduceSecond = () => {
+ 
+  second.value--;
+  UpdateCountdownNum();
   if (second.value === 0) {
     DeleteInterval();
     EmitComplete();
     return;
   }
-  second.value--;
-  UpdateCountdownNum();
 };
 
 // 更新倒數數值
