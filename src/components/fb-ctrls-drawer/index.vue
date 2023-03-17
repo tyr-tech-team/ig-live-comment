@@ -140,7 +140,7 @@ const MergeComments = (_commentList) => {
   for (const _comment of _commentList) {
     const _findIndex = commentList.value.findIndex((i) => i.id === _comment.id);
     if (_findIndex >= 0) continue;
-    commentList.value.push(_comment);
+    commentList.value.unshift(_comment);
   }
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -268,7 +268,7 @@ const GetIGLiveComments = async() => {
   return data.data.map((i) => {
     return {
       id: i.id,
-      userId: i.id,
+      userId: i.user.id,
       userName: i.username,
       createRfc: i.timestamp,
       createTime: Rfc3339ToDay(i.timestamp,"HH:mm:ss"),

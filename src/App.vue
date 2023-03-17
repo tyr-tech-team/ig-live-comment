@@ -13,7 +13,7 @@
       )
     .card-area
       .card-item(v-for="(cardInfo,i) of cardList" :key="cardInfo.uuid")
-        SnapUpCard(:cardInfo="cardInfo" :commentList="commentList")
+        SnapUpCard(:cardInfo="cardInfo" :commentList="commentList" @on-delete="CardDelete(cardInfo.uuid)")
     .comments-area 
       IgCommentsTable(:commentList="commentList")
 //------------------
@@ -26,55 +26,54 @@ import LiveCountdown from "@/components/live-countdown/index.vue"; // 倒數計�
 import SnapUpCard from "@/components/snap-up-card/index.vue"; // 搶購倒數卡片
 import IgCommentsTable from "@/components/fb-ctrls-drawer/ig-comments-table.vue"; // 留言 Table
 
-import { ref, computed, nextTick, reactive } from "vue";
+import { ref, computed, nextTick, reactive, onMounted } from "vue";
 
 const openDrawer =ref(false); // 開啟抽屜
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 同步訊息列表
 const FbCtrlsDrawer1 = ref(null);
-const commentList = ref([]);
+// const commentList = ref([]);
 const currentUUID = ref("");
-const cardList = ref([]);
-nextTick(() => {
-  commentList.value = FbCtrlsDrawer1.value.commentList;
+const isMounted = ref(false);
+const cardList = reactive([]);
+onMounted(() => {
+  isMounted.value = true;
+});
+const commentList = computed(() => {
+  if (!isMounted.value ) return [];
+  return FbCtrlsDrawer1.value.commentList;
 });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 建立新卡片
 const CardCreate = (uuid) => {
-  console.log("create",uuid);
   currentUUID.value = uuid;
-  cardList.value.unshift(ref({
+  cardList.unshift({
     uuid, // 唯一ID
     startAt: "", // 開始時間
     endAt: "", // 結束時間
     name: "",
     increase: 1000, // 增加量
     basicPrice: 0
-  }));
+  });
 };
 
 // 倒數取消後刪除
 const CardDelete = (uuid) => {
-  console.log("cancel", uuid);
+  const findIndex = cardList.findIndex((i) => i.uuid === uuid);
 
-  const findIndex = cardList.value.findIndex((i) => i.uuid === uuid);
-
-  if (findIndex > -1)  cardList.value.splice(findIndex, 1);
+  if (findIndex > -1)  cardList.splice(findIndex, 1);
 };
 
 // 開始正式倒數
 const OnCountdownStart = (uuid) => {
-  console.log("start",uuid);
-  const find = cardList.value.find((i) => i.value.uuid === uuid);
-  console.log(find);
-  if (find) find.value.startAt = new Date().valueOf();
+  const find = cardList.find((i) => i.uuid === uuid);
+  if (find) find.startAt = (new Date().valueOf()/1000)^0;
 };
 
 // 倒數完成
 const OnCountdownComplete = (uuid) => {
-  console.log("complete", uuid);
-  const find = cardList.value.find((i) => i.value.uuid === uuid);
-  if (find) find.value.endAt = new Date().valueOf();
+  const find = cardList.find((i) => i.uuid === uuid);
+  if (find) find.endAt = (new Date().valueOf()/1000)^0;
 };
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -98,7 +97,11 @@ const OpenFBCtrlDrawer = async () => {
       grid-area: countdown;
     }
     .card-area {
+      margin-top: 10px;
       grid-area: card;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .comments-area {
       grid-area: comments

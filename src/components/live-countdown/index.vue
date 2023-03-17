@@ -52,9 +52,9 @@ const CountdownCard1 = ref(null);
 const CountdownCard2 = ref(null);
 
 const prepareM = ref(0); // 1
-const prepareS = ref(5);
+const prepareS = ref(2);
 const countdownM = ref(0); // 2
-const countdownS = ref(5);
+const countdownS = ref(2);
 const prepareSecond = ref(0);
 const countdownSecond = ref(0);
 
@@ -145,7 +145,6 @@ const ClickPause = () => {
 
 // 恢復
 const ClickReset = () => {
-  console.log("cancel", uuid.value);
   if (uuid.value) {
     EmitCancel();
     uuid.value = "";
