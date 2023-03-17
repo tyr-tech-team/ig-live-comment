@@ -113,7 +113,7 @@ const ReduceSecond = () => {
  
   second.value--;
   UpdateCountdownNum();
-  if (second.value === 0) {
+  if (second.value <= 0) {
     DeleteInterval();
     EmitComplete();
     return;
