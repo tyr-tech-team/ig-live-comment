@@ -151,7 +151,7 @@ const CreateInterval = () => {
   commentsInterval = setInterval(async() => {
     const _commentList = await GetIGLiveComments();
     MergeComments(_commentList);
-  }, 2000);
+  }, 5000);
 };
 
 // 銷毀循環
@@ -225,6 +225,7 @@ const GetFbPageList = async() => {
     message.error("取得粉專列表失敗");
     return false;
   }
+  console.log("data", data);
   pageList.value = data.data.map((item) => {
     return {label: item.name, value: item.id};
   });
@@ -265,6 +266,7 @@ const GetIGLiveComments = async() => {
     message.error("取得留言失敗");
     return [];
   }
+  console.log("comments", data);
   return data.data.map((i) => {
     return {
       id: i.id,

@@ -134,7 +134,6 @@ export const IGLiveComments = async (mediaId) => {
     const data = {authResponse: null, status: "connected"};
     const res = await Api(param);
     if (res) data.authResponse = res;
-    console.log("comments", res);
     return ResMsg("Api", data);
   }
   return ResMsg("InitStatus", statusRes);
