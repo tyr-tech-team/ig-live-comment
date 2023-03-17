@@ -134,21 +134,22 @@ export const IGLiveComments = async (mediaId) => {
     const data = {authResponse: null, status: "connected"};
     const res = await Api(param);
     if (res) data.authResponse = res;
+    console.log("comments", res);
     return ResMsg("Api", data);
   }
   return ResMsg("InitStatus", statusRes);
 };
 // 取得IG直播留言
-export const IGUserImg = async (mediaId) => {
-  // const statusRes = await InitStatus();
-  // if (statusRes.status === "connected") {
-  //   const param = {
-  //     url: `/${mediaId}/comments?fields=from,text,timestamp,user,username,profile_picture_url`
-  //   };
-  //   const data = {authResponse: null, status: "connected"};
-  //   const res = await Api(param);
-  //   if (res) data.authResponse = res;
-  //   return ResMsg("Api", data);
-  // }
-  // return ResMsg("InitStatus", statusRes);
+export const IGUserImg = async (userId) => {
+  const statusRes = await InitStatus();
+  if (statusRes.status === "connected") {
+    const param = {
+      url: `/${userId}?fields=from,text,timestamp,user,name,profile_picture_url`
+    };
+    const data = {authResponse: null, status: "connected"};
+    const res = await Api(param);
+    if (res) data.authResponse = res;
+    return ResMsg("Api", data);
+  }
+  return ResMsg("InitStatus", statusRes);
 };

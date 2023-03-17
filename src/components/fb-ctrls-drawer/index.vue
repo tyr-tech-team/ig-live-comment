@@ -225,7 +225,7 @@ const GetFbPageList = async() => {
     message.error("取得粉專列表失敗");
     return false;
   }
-  pageList.value = data. data.map((item) => {
+  pageList.value = data.data.map((item) => {
     return {label: item.name, value: item.id};
   });
   return true;
@@ -268,7 +268,7 @@ const GetIGLiveComments = async() => {
   return data.data.map((i) => {
     return {
       id: i.id,
-      userId: i.user.id,
+      userId: i.from.id,
       userName: i.username,
       createRfc: i.timestamp,
       createTime: Rfc3339ToDay(i.timestamp,"HH:mm:ss"),
