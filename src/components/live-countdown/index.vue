@@ -30,6 +30,7 @@
       sloganText="預備備！"
       :countdownSecond="prepareSecond"
       :urgentSec="10"
+      :endSec="1"
       @on-first-start="OnPrepareStart"
       @on-complete="OnPrepareComplete"
     )
