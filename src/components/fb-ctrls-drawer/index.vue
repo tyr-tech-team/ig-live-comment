@@ -71,7 +71,7 @@ const commentList = ref([]); // 留言列表
 const selectPageId = ref(""); // 選中粉專
 const selectBusinessId = ref(""); // 選中IG商業帳戶(專業帳戶)ID
 const selectLiveMediaId = ref(""); // 選中直播
-
+const count = ref(0); // 選中直播
 let commentsInterval = null; // 取得留言循環
 const isCommentsWatch = ref(false);
 
@@ -136,7 +136,9 @@ const ClearLiveComments = () => {
   commentList.value = [];
 };
 // 合併留言
-const MergeComments = (_commentList) => {
+const MergeComments = async () => {
+  const _commentList = await GetIGLiveComments();
+  console.log("comment", _commentList);
   for (const _comment of _commentList) {
     const _findIndex = commentList.value.findIndex((i) => i.id === _comment.id);
     if (_findIndex >= 0) continue;
@@ -145,13 +147,13 @@ const MergeComments = (_commentList) => {
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 開始循環
-const CreateInterval = () => {
+const CreateInterval = async () => {
+  await MergeComments();
   if (commentsInterval) return;
   isCommentsWatch.value = true;
   commentsInterval = setInterval(async() => {
-    const _commentList = await GetIGLiveComments();
-    MergeComments(_commentList);
-  }, 5000);
+    await MergeComments();
+  }, 1000);
 };
 
 // 銷毀循環
@@ -260,8 +262,10 @@ const GetIGLiveListBtn = async() => {
 
 //  取得直播留言
 const GetIGLiveComments = async() => {
+  count.value++;
   if (!selectLiveMediaId.value) return false;
   const {data, status: { isPass }} = await $fb.IGLiveComments(selectLiveMediaId.value);
+  console.log("API", count.value, data, isPass);
   if (!isPass) {
     message.error("取得留言失敗");
     return [];

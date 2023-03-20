@@ -1,8 +1,6 @@
 <template lang="pug">
 //- 請填寫功能描述👈
 #Home
-  .row-item
-    aButton(type="primary" @click="OpenFBCtrlDrawer") {{"FB 控制項"}}
   .ctrl-box
     .countdown-area
       LiveCountdown(
@@ -13,8 +11,9 @@
       )
     .card-area
       .card-item(v-for="(cardInfo,i) of cardList" :key="cardInfo.uuid")
-        SnapUpCard(:cardInfo="cardInfo" :commentList="commentList" @on-delete="CardDelete(cardInfo.uuid)")
+        SnapUpCard(:cardInfo="cardInfo" :commentList="reverseCommentList" @on-delete="CardDelete(cardInfo.uuid)")
     .comments-area 
+      aButton(type="primary" @click="OpenFBCtrlDrawer") {{"FB 控制項"}}
       IgCommentsTable(:commentList="commentList")
 //------------------
 FbCtrlsDrawer(ref="FbCtrlsDrawer1" v-model:isOpen="openDrawer")
@@ -42,6 +41,13 @@ onMounted(() => {
 const commentList = computed(() => {
   if (!isMounted.value ) return [];
   return FbCtrlsDrawer1.value.commentList;
+});
+
+const reverseCommentList = computed(() => {
+  if (!isMounted.value ) return [];
+  const _list = commentList.value;
+  // console.log("ll", _list.sort((a,b) => b-a));
+  return _list;
 });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 建立新卡片

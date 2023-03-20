@@ -2,9 +2,9 @@
 //- 請填寫功能描述👈
 #IgCommentsTable
   .table-row.table-header
-    p {{"Time"}}
-    p {{"User"}}
-    p {{"Text"}}
+    p {{"時間"}}
+    p {{"使用者"}}
+    p {{"內容"}}
   .table-row(v-for="commentItem of commentList" :key="commentItem.id")
     p {{commentItem.createTime}}
     p {{commentItem.userName}}
