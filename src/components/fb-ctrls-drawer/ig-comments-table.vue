@@ -38,7 +38,7 @@ const props = defineProps({
   }
   .table-row {
     display: grid;
-    grid-template-columns: 65px 120px 1fr;
+    grid-template-columns: 105px 120px 1fr;
     &:not(:last-child) {
       border-bottom: 1px solid #ccc;
     }

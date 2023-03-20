@@ -20,6 +20,7 @@ const ResMsg = (fnName, res, closeMask = false) => {
 // 狀態
 export const Status = async (appId) => {
   const statusRes = await InitStatus(appId);
+  console.log("status", statusRes);
   return ResMsg("InitStatus", statusRes);
 };
 // --------------------------------------------------------

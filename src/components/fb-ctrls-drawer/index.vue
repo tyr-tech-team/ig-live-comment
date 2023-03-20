@@ -138,11 +138,11 @@ const ClearLiveComments = () => {
 // 合併留言
 const MergeComments = async () => {
   const _commentList = await GetIGLiveComments();
-  console.log("comment", _commentList);
+  _commentList.reverse(); // 反轉
   for (const _comment of _commentList) {
     const _findIndex = commentList.value.findIndex((i) => i.id === _comment.id);
     if (_findIndex >= 0) continue;
-    commentList.value.unshift(_comment);
+    commentList.value.push(_comment);
   }
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -277,7 +277,7 @@ const GetIGLiveComments = async() => {
       userId: i.from.id,
       userName: i.username,
       createRfc: i.timestamp,
-      createTime: Rfc3339ToDay(i.timestamp,"HH:mm:ss"),
+      createTime: Rfc3339ToDay(i.timestamp,"MM/DD HH:mm:ss"),
       timestamp: DayToNum(i.timestamp),
       text: i.text,
     };

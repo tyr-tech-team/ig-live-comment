@@ -60,7 +60,7 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  commentList: {
+  add1CommentList: {
     type: Array,
     default: () => ([])
   }
@@ -93,13 +93,13 @@ const AskDelete = async() => {
     EmitDelete();
   }
 };
-// 訊息 +1 的列表
-const add1CommentList = computed(() => {
-  return props.commentList.filter((comment) => comment.text.includes("+1"));
-});
+// // 訊息 +1 的列表
+// const add1CommentList = computed(() => {
+//   return props.commentList.filter((comment) => comment.text.includes("+1"));
+// });
 // 在時間區間內的訊息
 const inTimeRangeCommentList = computed(() => {
-  const _list = add1CommentList.value.filter((comment) => {
+  const _list = props.add1CommentList.filter((comment) => {
     const {timestamp} = comment;
     // 開始時間不存在
     if (!props.cardInfo.startAt) return false;

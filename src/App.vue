@@ -11,7 +11,7 @@
       )
     .card-area
       .card-item(v-for="(cardInfo,i) of cardList" :key="cardInfo.uuid")
-        SnapUpCard(:cardInfo="cardInfo" :commentList="reverseCommentList" @on-delete="CardDelete(cardInfo.uuid)")
+        SnapUpCard(:cardInfo="cardInfo" :add1CommentList="add1CommentList" @on-delete="CardDelete(cardInfo.uuid)")
     .comments-area 
       aButton(type="primary" @click="OpenFBCtrlDrawer") {{"FB 控制項"}}
       IgCommentsTable(:commentList="commentList")
@@ -48,6 +48,10 @@ const reverseCommentList = computed(() => {
   const _list = commentList.value;
   // console.log("ll", _list.sort((a,b) => b-a));
   return _list;
+});
+// 訊息 +1 的列表
+const add1CommentList = computed(() => {
+  return commentList.value.filter((comment) => comment.text.includes("+1")).reverse(); // 反轉
 });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 建立新卡片
