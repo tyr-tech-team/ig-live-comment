@@ -11,15 +11,33 @@
     p {{commentItem.text}}
   .no-data(v-show="commentList.length===0")
     p {{"NO DATA"}}
+.btn    
+  aButton(size="small" type="primary" @click="DownloadCsv") {{"Download CSV"}}
 </template>
 
 <script setup>
+import { getCurrentInstance } from "vue";
 const props = defineProps({
   commentList: {
     type: Array,
     default: ()=> ([])
   }
 });
+const {proxy: {$moment}} = getCurrentInstance();
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+const DownloadCsv = () => {
+  const csvContent = "data:text/csv;charset=utf-8,"+
+    "留言時間,使用者名稱,留言內容,留言 ID,使用者 ID,RFC時間\r\n"+
+    props.commentList.map((e) => `${e.createTime},${e.userName},${e.text},${e.id},${e.createRfc},${e.userId}`).join("\r\n");
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  const now = $moment().format("YYYYMMDD_HH_mm_ss");
+  link.setAttribute("download", `${now}.csv`);
+  document.body.appendChild(link); // Required for FF
+
+  link.click();
+};
 </script>
 
 <style lang="scss" scoped>
@@ -60,5 +78,8 @@ const props = defineProps({
     text-align: center;
     padding: 10px;
   }
+}
+.btn {
+  margin-top: 10px;
 }
 </style>
