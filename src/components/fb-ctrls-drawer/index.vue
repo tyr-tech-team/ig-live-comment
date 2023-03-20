@@ -12,7 +12,6 @@ aDrawer(
     .item-row
       p {{"App ID："}}
       aInput(v-model:value="appId" style="width: 200px" size="small")
-      aButton(size="small" @click="ClearCommentsHistory") {{"清除快取留言"}}
     .item-row 
       aButton(type="primary" @click="DefaultFlow") {{"一鍵運行"}}
       aButton(size="small"  @click="ClickAuthorization") {{"授權"}}
@@ -44,7 +43,7 @@ aDrawer(
     .item-row
       aButton(size="small" @click="StratWatchLiveComments") {{"開啟直播留言監聽"}} 
       aButton(size="small" danger @click="StopWatchLiveComments") {{"停止直播留言監聽"}}
-      aButton(size="small" @click="ClearLiveComments") {{"清除監聽資料"}}
+      aButton(size="small" danger @click="ClearCommentsHistory") {{"清除留言"}}
     //- ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
     .status {{`狀態：${isCommentsWatch?'監聽中':'停止監聽'}`}}
     IgCommentsTable(:commentList="commentList")
@@ -53,7 +52,7 @@ aDrawer(
 <script setup>
 import { message, Modal } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { ref, createVNode, getCurrentInstance, onMounted, onUnmounted } from "vue";
+import { ref, createVNode, getCurrentInstance, onMounted, onUnmounted, nextTick } from "vue";
 import IgCommentsTable from "./ig-comments-table.vue";
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const props = defineProps({
@@ -166,10 +165,8 @@ const WriteCommentsHistoryToStorage = () => {
 
 // 取得歷史留言
 const GetHistoryComments = () => {
-  console.log("change");
   const keys =  $storage.keys;
   const commentKey = `${$moment().format("YYYYMMDD")}`;
-  console.log($storage.Get(keys.commentsHistory));
   const obj = $storage.Get(keys.commentsHistory) || [];
   commentList.value = obj?.[commentKey] || [];
 };
@@ -189,6 +186,7 @@ const ClearCommentsHistory = async()  => {
   if (!isOk) return;
   $storage.RemoveAll();
   GetHistoryComments();
+  DeleteInterval();
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 開始循環
@@ -272,7 +270,6 @@ const GetFbPageList = async() => {
     message.error("取得粉專列表失敗");
     return false;
   }
-  console.log("data", data);
   pageList.value = data.data.map((item) => {
     return {label: item.name, value: item.id};
   });

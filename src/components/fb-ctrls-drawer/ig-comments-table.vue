@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import { getCurrentInstance } from "vue";
+import { getCurrentInstance, nextTick, ref, onMounted, watch} from "vue";
 const props = defineProps({
   commentList: {
     type: Array,
@@ -24,7 +24,27 @@ const props = defineProps({
   }
 });
 const {proxy: {$moment}} = getCurrentInstance();
+const igCommentsTable = ref(null);
+onMounted(() => {
+  TableScrollBottom();
+});
+watch(
+  () => props.commentList,
+  () => {
+    TableScrollBottom();
+  },
+  {deep: true}
+);
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 滑至最底
+const TableScrollBottom = () => {
+  nextTick(() => {
+    const el = igCommentsTable.value;
+    el.scrollTop = el.scrollHeight;
+  });
+};
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 下載成CSV
 const DownloadCsv = () => {
   const csvContent = "data:text/csv;charset=utf-8,"+
     "留言時間,使用者名稱,留言內容,留言 ID,使用者 ID,RFC時間\r\n"+
@@ -37,6 +57,7 @@ const DownloadCsv = () => {
   document.body.appendChild(link); // Required for FF
   link.click();
 };
+
 </script>
 
 <style lang="scss" scoped>
