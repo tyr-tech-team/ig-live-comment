@@ -42,8 +42,8 @@ aDrawer(
         :options="liveList"
       )
     .item-row
-      aButton(size="small" @click="StratWatchLiveComments") {{"開啟直撥留言監聽"}} 
-      aButton(size="small" danger @click="StopWatchLiveComments") {{"停止直撥留言監聽"}}
+      aButton(size="small" @click="StratWatchLiveComments") {{"開啟直播留言監聽"}} 
+      aButton(size="small" danger @click="StopWatchLiveComments") {{"停止直播留言監聽"}}
       aButton(size="small" @click="ClearLiveComments") {{"清除監聽資料"}}
     //- ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
     .status {{`狀態：${isCommentsWatch?'監聽中':'停止監聽'}`}}
@@ -66,7 +66,7 @@ const {proxy: {$fb, $moment, $storage}} = getCurrentInstance();
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const fbRes = ref({res: null});  // 回傳
-const appId = ref("1105528194174599"); // FB 應用 ID
+const appId = ref("181443171333337");// ref("1105528194174599"); // FB 應用 ID
 const pageList = ref([]); // 粉專列表
 const liveList = ref([]); // 直播列表
 const commentList = ref([]); // 留言列表
@@ -120,17 +120,17 @@ const DefaultFlow = async () => {
   console.log("選定第一個直播");
   // 選定第一個直播
   selectLiveMediaId.value = liveList.value[0].value;
-  // 開啟直撥監聽
+  // 開啟直播監聽
   StratWatchLiveComments();
 };
 
-// 開啟直撥留言監聽
+// 開啟直播留言監聽
 const StratWatchLiveComments = () => {
   if (!selectLiveMediaId.value) return false;
   CreateInterval();
 };
 
-// 停止直撥留言監聽
+// 停止直播留言監聽
 const StopWatchLiveComments = () => {
   DeleteInterval();
 };
@@ -186,7 +186,7 @@ const ClearCommentsHistory = async()  => {
       onCancel() {resolve(false);},
     })
   );
-  if (!isOk) return
+  if (!isOk) return;
   $storage.RemoveAll();
   GetHistoryComments();
 };

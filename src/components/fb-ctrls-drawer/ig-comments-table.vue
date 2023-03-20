@@ -1,6 +1,6 @@
 <template lang="pug">
 //- 請填寫功能描述👈
-#IgCommentsTable
+#IgCommentsTable(ref="igCommentsTable")
   .table-row.table-header
     p {{"時間"}}
     p {{"使用者"}}
@@ -35,7 +35,6 @@ const DownloadCsv = () => {
   const now = $moment().format("YYYYMMDD_HH_mm_ss");
   link.setAttribute("download", `${now}.csv`);
   document.body.appendChild(link); // Required for FF
-
   link.click();
 };
 </script>

@@ -55,16 +55,16 @@ const add1CommentList = computed(() => {
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 建立新卡片
 const CardCreate = (uuid) => {
-  return; // TODO
-  // currentUUID.value = uuid;
-  // cardList.unshift({
-    // uuid, // 唯一ID
-    // startAt: "", // 開始時間
-    // endAt: "", // 結束時間
-    // name: "",
-    // increase: 1000, // 增加量
-    // basicPrice: 0
-  // });
+  // return; // TODO
+  currentUUID.value = uuid;
+  cardList.unshift({
+    uuid, // 唯一ID
+    startAt: "", // 開始時間
+    endAt: "", // 結束時間
+    name: "",
+    increase: 1000, // 增加量
+    basicPrice: 0
+  });
 };
 
 // 倒數取消後刪除
@@ -100,7 +100,7 @@ const OpenFBCtrlDrawer = async () => {
   padding: 20px;
   .ctrl-box {
     display: grid;
-    grid-template-columns: auto minmax(200px, 1fr) 400px;
+    grid-template-columns: auto minmax(600px, 1fr) 400px;
     grid-template-areas: "countdown card comments";
     gap: 50px;
     .countdown-area {
