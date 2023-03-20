@@ -46,7 +46,6 @@ const commentList = computed(() => {
 const reverseCommentList = computed(() => {
   if (!isMounted.value ) return [];
   const _list = commentList.value;
-  // console.log("ll", _list.sort((a,b) => b-a));
   return _list;
 });
 // 訊息 +1 的列表
@@ -56,15 +55,16 @@ const add1CommentList = computed(() => {
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 建立新卡片
 const CardCreate = (uuid) => {
-  currentUUID.value = uuid;
-  cardList.unshift({
-    uuid, // 唯一ID
-    startAt: "", // 開始時間
-    endAt: "", // 結束時間
-    name: "",
-    increase: 1000, // 增加量
-    basicPrice: 0
-  });
+  return; // TODO
+  // currentUUID.value = uuid;
+  // cardList.unshift({
+    // uuid, // 唯一ID
+    // startAt: "", // 開始時間
+    // endAt: "", // 結束時間
+    // name: "",
+    // increase: 1000, // 增加量
+    // basicPrice: 0
+  // });
 };
 
 // 倒數取消後刪除

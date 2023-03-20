@@ -275,11 +275,11 @@ const GetIGLiveComments = async() => {
     return {
       id: i.id,
       userId: i.from.id,
-      userName: i.username,
+      userName: i.username.replaceAll(",","，"),
       createRfc: i.timestamp,
       createTime: Rfc3339ToDay(i.timestamp,"MM/DD HH:mm:ss"),
       timestamp: DayToNum(i.timestamp),
-      text: i.text,
+      text: i.text.replaceAll(",","，"),
     };
   });
 };

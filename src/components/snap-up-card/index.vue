@@ -93,10 +93,7 @@ const AskDelete = async() => {
     EmitDelete();
   }
 };
-// // 訊息 +1 的列表
-// const add1CommentList = computed(() => {
-//   return props.commentList.filter((comment) => comment.text.includes("+1"));
-// });
+
 // 在時間區間內的訊息
 const inTimeRangeCommentList = computed(() => {
   const _list = props.add1CommentList.filter((comment) => {
