@@ -12,6 +12,7 @@ aDrawer(
     .item-row
       p {{"App ID："}}
       aInput(v-model:value="appId" style="width: 200px" size="small")
+      aButton(size="small" @click="ClearCommentsHistory") {{"清除快取留言"}}
     .item-row 
       aButton(type="primary" @click="DefaultFlow") {{"一鍵運行"}}
       aButton(size="small"  @click="ClickAuthorization") {{"授權"}}
@@ -32,7 +33,7 @@ aDrawer(
       aButton(size="small" @click="GetIGBusinessInfoBtn") {{"取得IG商業帳戶列表"}}
       p {{`商業帳戶 ID：${selectBusinessId}`}}
     .item-row
-      aButton(size="small" @click="GetIGLiveListBtn") {{"取得IG直播列表"}}
+      aButton(size="small" @click="GetIGLiveListBtn") {{"取得IG直播列表"}} 
       p {{"直播列表："}}
       aSelect(
         v-model:value="selectLiveMediaId"
@@ -50,8 +51,9 @@ aDrawer(
 </template>
 
 <script setup>
-import { ref, getCurrentInstance, onUnmounted } from "vue";
-import { message } from "ant-design-vue";
+import { message, Modal } from "ant-design-vue";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { ref, createVNode, getCurrentInstance, onMounted, onUnmounted } from "vue";
 import IgCommentsTable from "./ig-comments-table.vue";
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const props = defineProps({
@@ -60,7 +62,7 @@ const props = defineProps({
     default: false
   }
 });
-const {proxy: {$fb, $moment}} = getCurrentInstance();
+const {proxy: {$fb, $moment, $storage}} = getCurrentInstance();
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const fbRes = ref({res: null});  // 回傳
@@ -76,6 +78,9 @@ let commentsInterval = null; // 取得留言循環
 const isCommentsWatch = ref(false);
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+onMounted(()=> {
+  GetHistoryComments();
+});
 onUnmounted(()=>{
   DeleteInterval();
 });
@@ -139,11 +144,51 @@ const ClearLiveComments = () => {
 const MergeComments = async () => {
   const _commentList = await GetIGLiveComments();
   _commentList.reverse(); // 反轉
+  let _count = 0;
   for (const _comment of _commentList) {
     const _findIndex = commentList.value.findIndex((i) => i.id === _comment.id);
     if (_findIndex >= 0) continue;
     commentList.value.push(_comment);
+    _count++;
   }
+  if (_count > 0) {
+    WriteCommentsHistoryToStorage(commentList.value);
+  }
+};
+// 留言寫入localstorage
+const WriteCommentsHistoryToStorage = () => {
+  const commentKey = `${$moment().format("YYYYMMDD")}`;
+  const obj = {};
+  obj[commentKey] = commentList.value;
+  const keys = $storage.keys;
+  $storage.Set(keys.commentsHistory, obj);
+};
+
+// 取得歷史留言
+const GetHistoryComments = () => {
+  console.log("change");
+  const keys =  $storage.keys;
+  const commentKey = `${$moment().format("YYYYMMDD")}`;
+  console.log($storage.Get(keys.commentsHistory));
+  const obj = $storage.Get(keys.commentsHistory) || [];
+  commentList.value = obj?.[commentKey] || [];
+};
+// 清除快取留言
+const ClearCommentsHistory = async()  => {
+  const isOk = await new Promise((resolve) =>
+    Modal.confirm({
+      title: "刪除確認",
+      icon: createVNode(ExclamationCircleOutlined),
+      content: "確定要刪除嗎？",
+      okText: "刪除",
+      cancelText: "取消",
+      onOk() {resolve(true);},
+      onCancel() {resolve(false);},
+    })
+  );
+  if (!isOk) return
+  $storage.RemoveAll();
+  GetHistoryComments();
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 開始循環
@@ -153,7 +198,7 @@ const CreateInterval = async () => {
   isCommentsWatch.value = true;
   commentsInterval = setInterval(async() => {
     await MergeComments();
-  }, 1000);
+  }, 2000);
 };
 
 // 銷毀循環
@@ -255,7 +300,7 @@ const GetIGLiveListBtn = async() => {
     return false;
   }
   liveList.value = data.data.map((item, index) => {
-    return {label: `${index}直播`, value: item.id };
+    return {label: item.id, value: item.id };
   });
   return true;
 };
@@ -263,6 +308,7 @@ const GetIGLiveListBtn = async() => {
 //  取得直播留言
 const GetIGLiveComments = async() => {
   count.value++;
+  let _count = 0;
   if (!selectLiveMediaId.value) return false;
   const {data, status: { isPass }} = await $fb.IGLiveComments(selectLiveMediaId.value);
   console.log("API", count.value, data, isPass);
@@ -270,7 +316,6 @@ const GetIGLiveComments = async() => {
     message.error("取得留言失敗");
     return [];
   }
-  console.log("comments", data);
   return data.data.map((i) => {
     return {
       id: i.id,
@@ -279,7 +324,7 @@ const GetIGLiveComments = async() => {
       createRfc: i.timestamp,
       createTime: Rfc3339ToDay(i.timestamp,"MM/DD HH:mm:ss"),
       timestamp: DayToNum(i.timestamp),
-      text: i.text.replaceAll(",","，"),
+      text: i.text.replaceAll(",","，"), // CSV 避開
     };
   });
 };

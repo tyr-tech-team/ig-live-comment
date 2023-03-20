@@ -100,7 +100,7 @@ const OpenFBCtrlDrawer = async () => {
   padding: 20px;
   .ctrl-box {
     display: grid;
-    grid-template-columns: auto minmax(600px, 1fr) 400px;
+    grid-template-columns: auto minmax(200px, 1fr) 400px;
     grid-template-areas: "countdown card comments";
     gap: 50px;
     .countdown-area {
