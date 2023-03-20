@@ -1,5 +1,5 @@
 <template lang="pug">
-//- 直播倒數計時卡片
+//- 直播倒數計時卡片a
 #CountdownCard
   .countdown-layout
     .slogan {{ sloganText }}
