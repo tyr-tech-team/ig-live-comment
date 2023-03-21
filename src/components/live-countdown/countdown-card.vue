@@ -100,6 +100,11 @@ const EmitComplete = () => {
 // 開始循環
 const CreateInterval = () => {
   EmitFirstStart();
+  if (second.value <= 0) {
+    DeleteInterval();
+    EmitComplete();
+    return;
+  }
   timeInterval = setInterval(() => {
     if (!isPause.value) {
       ReduceSecond();
@@ -116,7 +121,10 @@ const DeleteInterval = () => {
 // 減少秒數
 const ReduceSecond = () => {
   second.value--;
-  UpdateCountdownNum();
+  if (second.value >= 0) {
+    // 更新畫面
+    UpdateCountdownNum();
+  }
   if (second.value <= 0) {
     DeleteInterval();
     EmitComplete();
