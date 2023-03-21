@@ -51,10 +51,10 @@ import { ref, nextTick } from "vue";
 const CountdownCard1 = ref(null);
 const CountdownCard2 = ref(null);
 
-const prepareM = ref(0); // 1
-const prepareS = ref(2);
-const countdownM = ref(0); // 2
-const countdownS = ref(2);
+const prepareM = ref(1); // 1
+const prepareS = ref(0);
+const countdownM = ref(2); // 2
+const countdownS = ref(0);
 const prepareSecond = ref(0);
 const countdownSecond = ref(0);
 
