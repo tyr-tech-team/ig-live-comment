@@ -47,8 +47,8 @@ const TableScrollBottom = () => {
 // 下載成CSV
 const DownloadCsv = () => {
   const csvContent = "data:text/csv;charset=utf-8,"+
-    "留言時間,使用者名稱,留言內容,留言 ID,使用者 ID,RFC時間\r\n"+
-    props.commentList.map((e) => `${e.createTime},${e.userName},${e.text},${e.id},${e.createRfc},${e.userId}`).join("\r\n");
+    "留言時間,使用者名稱,留言內容,使用者 ID\r\n"+
+    props.commentList.map((e) => `${e.createTime},${e.userName},${e.text},${e.userId}`).join("\r\n");
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
   link.setAttribute("href", encodedUri);
