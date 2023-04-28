@@ -45,7 +45,8 @@
         span {{ `結束時間：` }}
         span.time-box(v-show="props.productInfo.endAt") {{ NumToDay(props.productInfo.endAt,'HH:mm:ss')}}
   .level-area
-    pre {{ commentList }}
+    //- // TODO
+    pre {{ commentNumList }}
     //- .table
       .table-row.table-header
         p {{"時間"}}
@@ -71,7 +72,7 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  commentList: { // 留言列表
+  commentNumList: { // 留言列表
     type: Array,
     default: () => ([])
   },
