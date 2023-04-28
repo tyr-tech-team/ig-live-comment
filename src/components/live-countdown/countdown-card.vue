@@ -20,13 +20,6 @@
         .num-box
           transition-group(name="slide-up")
             .num(v-for="n of 10" :key="n" v-show="s1===n-1") {{n-1}}
-    //- .ctrl-bar
-    //-   aButton(size="small" type="primary" @click="RefStart")
-    //-     CaretRightOutlined
-    //-   aButton(size="small" type="primary" @click="RefPause")
-    //-     PauseOutlined
-    //-   aButton(size="small" type="primary" @click="RefInit")
-    //-     UndoOutlined
 </template>
 
 <script setup>

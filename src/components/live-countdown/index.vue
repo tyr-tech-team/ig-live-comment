@@ -3,6 +3,19 @@
 #LiveCountdown
   .time-ctrl
     .time-card
+      .time-set 
+        aSelect(
+          v-model:value="selectProductId"
+          style="width: 100%"
+          allowClear
+          placeholder="請選擇商品"
+          :disabled="isLock" 
+          @change="EmitProductChange"
+        )
+          aSelectOption(
+            v-for="productItem of productSelectList" :key="productItem.value"
+            :value="productItem.value"
+          ) {{ productItem.label }}
       .time-set
         .time-label {{"預備備倒數設定："}}
         .row-item
@@ -46,11 +59,18 @@
 <script setup>
 import { CaretRightOutlined, PauseOutlined, UndoOutlined } from "@ant-design/icons-vue";
 import CountdownCard from "./countdown-card.vue";
-import { ref, nextTick } from "vue";
+import { ref, computed, nextTick } from "vue";
 
+const props = defineProps({
+  productCardList: {
+    type: Array,
+    default: () => ([])
+  },
+});
 const CountdownCard1 = ref(null);
 const CountdownCard2 = ref(null);
 
+const selectProductId = ref("");
 const prepareM = ref(1); // 1
 const prepareS = ref(0);
 const countdownM = ref(2); // 2
@@ -62,28 +82,27 @@ const isPrepareComplete = ref(false);
 const isCountdownComplete = ref(false);
 const isLock = ref(false);
 
-const uuid = ref("");
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const emit = defineEmits(["on-create", "on-start", "on-complete", "on-cancel"]);
-//  新增
-const EmitCreate = () => {
-  emit("on-create", uuid.value);
+const productSelectList = computed(() => {
+  return props.productCardList
+    .map((p)=> {
+      return {
+        label: p.name || "(未設定)",
+        value: p.uuid
+      };
+    });
+});
+const currentProductInfo = computed(() => {
+  if (!selectProductId.value) return null;
+  return props.productCardList.find((i) => i.uuid === selectProductId.value) || null;
+});
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+const emit = defineEmits(["on-product-change", "on-start", "on-complete", "on-cancel"]);
+// 選擇商品變動
+const EmitProductChange = () => {
+  emit("on-product-change", selectProductId.value);
 };
 
-// 開始
-const EmitStart = () => {
-  emit("on-start", uuid.value);
-};
-
-// 完成
-const EmitComplete = () => {
-  emit("on-complete", uuid.value);
-};
-
-// 取消
-const EmitCancel = () => {
-  emit("on-cancel", uuid.value);
-};
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 倒數計時初始化
 const InitCountdown = () => {
@@ -112,6 +131,7 @@ const CountdownSet =  () => {
 };
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
 // 開始
 const ClickStart = () => {
   // 尚未進行
@@ -145,49 +165,53 @@ const ClickPause = () => {
 
 // 恢復
 const ClickReset = () => {
-  if (uuid.value) {
-    EmitCancel();
-    uuid.value = "";
-  }
   isLock.value = false;
+  ResetProductTime();
   InitCountdown();
 };
+
+
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 預備備第一次開始 
 const OnPrepareStart = () => {
-  uuid.value = CreateUUID();
-  EmitCreate();
+  // TODO
 };
 // 預備備 完成
 const OnPrepareComplete = () => {
   isPrepareComplete.value = true;
   nextTick(() => {
-    EmitStart();
+    ResetProductTime();
+    SetProductStartAt();
     CountdownCard2.value.RefStart();
   });
 }; 
 
 // 先搶先贏 完成
 const OnCountdownComplete = () => {
-  EmitComplete();
-  uuid.value = "";
+  SetProdcutEndAt();
   isCountdownComplete.value = true;
   isLock.value = false;
 };
 
-// 生成唯一ID
-const CreateUUID = () => {
-  let d = Date.now();
-  if (typeof performance !== "undefined" && typeof performance.now === "function") {
-    d += performance.now(); // use high-precision timer if available
-  }
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (d + Math.random() * 16) % 16 | 0;
-    d = Math.floor(d / 16);
-    return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
-  });
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 初始時間
+const ResetProductTime = () => {
+  if (!currentProductInfo.value) return;
+  currentProductInfo.value.startAt = "";
+  currentProductInfo.value.endAt = "";
+  currentProductInfo.value.isComplete = false;
 };
-
+// 設定商品開始時間
+const SetProductStartAt = () => {
+  if (!currentProductInfo.value) return;
+  currentProductInfo.value.startAt = (new Date().valueOf()/1000)^0;
+};
+// 設定商品結束時間
+const SetProdcutEndAt = () => {
+  if (!currentProductInfo.value) return;
+  currentProductInfo.value.endAt = (new Date().valueOf()/1000)^0;
+  currentProductInfo.value.isComplete = true;
+};
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 InitCountdown();
 </script>
@@ -196,12 +220,12 @@ InitCountdown();
 
 // 佈局
 #LiveCountdown {
-  padding: 10px 0;
+  // padding: 10px 0;
 }
 // 組件
 #LiveCountdown {
   .row-item {
-    padding: 5px 0;
+    padding: 2px 0;
     display: flex;
     align-items: center;
     gap: 10px;
