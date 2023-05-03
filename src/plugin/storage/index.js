@@ -1,7 +1,8 @@
 // key對應表
 export const keys = {
   theme: "THEME", // @param object，主題
-  commentsHistory: "COMMENTSHISTORY" 
+  commentsHistory: "COMMENTSHISTORY",
+  productCard: "PRODUCTCARD"
 };
 
 // 設定項目

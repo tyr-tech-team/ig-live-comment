@@ -6,7 +6,12 @@
       p {{"X"}}
     .row-item
       p {{"商品名稱："}}
-      aInput(v-model:value="props.productInfo.name" style="width: 500px" size="small")
+      aInput(
+        v-model:value="props.productInfo.name"
+        style="width: 500px"
+        size="small"
+        @change="EmitChange"
+      )
     .row-item
       p {{"起標金額："}}
       aInputNumber(
@@ -16,6 +21,7 @@
         :parser="value => IntStyle(value.replace(/$s?|(,*)/g, ''))"
         style="width: 110px"
         size="small"
+        @change="EmitChange"
       )
       p.left-gap {{"金額間距："}}
       aInputNumber(
@@ -26,6 +32,7 @@
         :step="500"
         style="width: 80px"
         size="small"
+        @change="EmitChange"
       )
       p.left-gap {{"最高金額："}}
       aInputNumber(
@@ -36,6 +43,7 @@
         :step="500"
         style="width: 110px"
         size="small"
+        @change="EmitChange"
       )
     .row-item
       p
@@ -44,28 +52,33 @@
       p.left-gap
         span {{ `結束時間：` }}
         span.time-box(v-show="props.productInfo.endAt") {{ NumToDay(props.productInfo.endAt,'HH:mm:ss')}}
+      p.left-gap.big(v-if="winner")
+        span {{ winner.isWin? `得標者 ${winner.userName}：` : `目前出價 ${winner.userName}： ` }}
+        span {{ FormatNumber(winner.price)}}
+
   .level-area
-    //- // TODO
-    pre {{ commentNumList }}
-    //- .table
+    .table
       .table-row.table-header
         p {{"時間"}}
         p {{"使用者"}}
         p {{"金額"}}
         p {{"內容"}}
-      .table-row(v-for="commentItem of levelTableList" :key="commentItem.id")
+        p {{"使用者 ID"}}
+      .table-row(v-for="commentItem of levelCommentList" :key="commentItem.id")
         p {{commentItem.createTime}}
-        p {{commentItem.userName}}
-        p {{`NT$${FormatNumber((commentItem.index* props.cardInfo.increase) + props.cardInfo.basicPrice)}`}}
+        p.big {{commentItem.userName}}
+        p.big {{FormatNumber(commentItem.price)}}
         p {{commentItem.text}}
-      .no-data(v-show="levelTableList.length===0")
-        p {{"NO DATA"}}
+        p {{commentItem.userId}}
+      .no-data(v-show="levelCommentList.length===0")
+        p {{"尚未出現有人出價"}}
+        p {{ props.inTimeRangeCommentList }}
 </template>
 
 <script setup>
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { Modal, notification } from "ant-design-vue";
-import { ref, createVNode, computed, getCurrentInstance } from "vue";
+import { ref, createVNode, computed, getCurrentInstance, nextTick } from "vue";
 
 const props = defineProps({
   productInfo: { // 商品資訊
@@ -83,10 +96,58 @@ const props = defineProps({
 });
 const {proxy: {$fb, $moment}} = getCurrentInstance();
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const emit = defineEmits(["on-delete"]);
+// 在時間區間內的訊息
+const inTimeRangeCommentList = computed(() => {
+  return props.commentNumList.filter((comment) => {
+    const {timestamp} = comment;
+    // 開始時間不存在
+    if (!props.productInfo.startAt) return false;
+    // 小於開始時間
+    if (timestamp < props.productInfo.startAt) return false; 
+    // 結束時間不存在
+    if (!props.productInfo.endAt) return true;
+    // 大於開始時間
+    if (timestamp > props.productInfo.endAt) return false;
+    return true; 
+  });
+});
+
+// 按出價階級的訊息
+const levelCommentList = computed(() => {
+  const _arr = [];
+  const { basicPrice, increase, TopPrice } = props.productInfo;
+  let nextPrice = basicPrice + increase;
+  for (const m of props.commentNumList) {
+  // TODO for (const m of inTimeRangeCommentList.value) {
+    // 暫時得標金額
+    const okPrice = m.nums.filter((i) => i <= TopPrice && i === nextPrice); // 不超過最大金額，等於預計金額
+    if (okPrice.length > 0) {
+      _arr.push({ ...m, price: nextPrice});
+      nextPrice += increase;
+    }
+  }
+  return _arr;
+});
+
+const winner = computed( () => {
+  UpdateWinner();
+  const _winner = levelCommentList.value[levelCommentList.value.length - 1];
+  if (!_winner) return;
+  let isWin = _winner.price === props.productInfo.TopPrice || props.productInfo.endAt;
+  return {..._winner, isWin};
+});
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+const emit = defineEmits(["on-delete", "on-change"]);
+// 刪除事件
 const EmitDelete = () => {
   emit("on-delete");
 };
+
+// 變更事件
+const EmitChange = () => {
+  emit("on-change");
+};
+
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 刪除詢問
 const AskDelete = async() => {
@@ -108,6 +169,14 @@ const AskDelete = async() => {
   if (isOk) {
     EmitDelete();
   }
+};
+const UpdateWinner  = () =>  {
+  nextTick( () => {
+    props.productInfo.winner = winner();
+    EmitChange();
+  });
+  // setTimeout(() => {
+  // }, 50);
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 格式金錢化，三位一點
@@ -147,14 +216,14 @@ const DayToRfc3339 = (rfc) => $moment(rfc).format();
     "level";
   .ctrl-area {
     grid-area: ctrl;
-    background: #E0E6EA;
+    background: #E4EAEE;
     padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 5px;
   }
   .level-area {
-    padding: 10px;
+    padding: 1px;
     background: #ffffff;
     grid-area: level;
   }
@@ -200,7 +269,7 @@ const DayToRfc3339 = (rfc) => $moment(rfc).format();
     }
     .table-row {
       display: grid;
-      grid-template-columns: 105px 120px 1fr;
+      grid-template-columns: 105px 120px 100px 1fr 140px;
       &:not(:last-child) {
         border-bottom: 1px solid #ccc;
       }
@@ -223,6 +292,12 @@ const DayToRfc3339 = (rfc) => $moment(rfc).format();
       text-align: center;
       padding: 10px;
     }
+
   }
+}   
+.big {
+  font-weight: 900 !important;
+  font-size: 14px !important;
+  color: #48434E;
 }
 </style>

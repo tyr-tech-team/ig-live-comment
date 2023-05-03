@@ -184,7 +184,8 @@ const ClearCommentsHistory = async()  => {
     })
   );
   if (!isOk) return;
-  $storage.RemoveAll();
+  const keys = $storage.keys;
+  $storage.Remove(keys.commentsHistory);
   GetHistoryComments();
   DeleteInterval();
 };

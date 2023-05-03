@@ -13,9 +13,10 @@
         .card-item(v-for="productInfo of productCardList" :key="productInfo.uuid") 
           ProductCard(
             :productInfo="productInfo" 
-            :commentList="commentNumList"
+            :commentNumList="commentNumList"
             :colseDisabled="selectedProductId === productInfo.uuid"
             @on-delete="DeleteProductCard(productInfo.uuid)"
+            @on-change="ChangeProductCard"
           )
     .comments-area 
       aButton(type="primary" @click="OpenFBCtrlDrawer") {{"FB 控制項"}}
@@ -25,14 +26,16 @@ FbCtrlsDrawer(ref="FbCtrlsDrawer1" v-model:isOpen="openDrawer")
 </template>
 
 <script setup>
+import throttle from "lodash/throttle";
 import FbCtrlsDrawer from "@/components/fb-ctrls-drawer/index.vue"; // FB IG 控制抽屜
 import LiveCountdown from "@/components/live-countdown/index.vue"; // 倒數計時器
 import ProductCard from "@/components/product-card/index.vue"; // 商品卡片
 import IgCommentsTable from "@/components/fb-ctrls-drawer/ig-comments-table.vue"; // 留言 Table
 
-import { ref, computed, nextTick, reactive, onMounted } from "vue";
+import { ref, computed, nextTick, reactive, onMounted, getCurrentInstance } from "vue";
 
 const openDrawer =ref(false); // 開啟抽屜
+const {proxy: {$storage}} = getCurrentInstance();
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 同步訊息列表
 const FbCtrlsDrawer1 = ref(null);
@@ -40,7 +43,9 @@ const isMounted = ref(false);
 const CardList = ref(null);
 const selectedProductId = ref("");
 const productCardList = reactive([]); // 商品卡片列表
+
 onMounted(() => {
+  GetroductCard();
   isMounted.value = true;
 });
 const commentList = computed(() => {
@@ -52,10 +57,10 @@ const commentList = computed(() => {
 const commentNumList = computed(() => {
   if (!isMounted.value ) return [];
   return FbCtrlsDrawer1.value.commentList
-    .map((i) => {
+    .map((m) => {
       return {
-        ...i,
-        nums: i.text.match(/\d+(\.\d+)?/g)
+        ...m,
+        nums: (m.text.match(/\d+(\.\d+)?/g))?.map((i) => Number(i)) || []
       };
     })
     .filter((i) => i.nums );
@@ -87,17 +92,24 @@ const CreateProductCard = () => {
     increase: 1000, // 增加量
     basicPrice: 0,
     topPrice: 0,
-    isComplete: false
+    isComplete: false,
+    winner: null
   });
   CardListScrollToDown();
+  SaveProductCard();
 };
+
 
 // 刪除商品卡片
 const DeleteProductCard = (uuid) => {
   const findIndex = productCardList.findIndex((i) => i.uuid === uuid);
   if (findIndex > -1)  productCardList.splice(findIndex, 1);
+  SaveProductCard();
 };
-
+// 商品卡片變更
+const ChangeProductCard = throttle(function () {
+  SaveProductCard();
+}, 200, { leading: true, trailing: false });
 // 生成唯一ID
 const CreateUUID = () => {
   let d = Date.now();
@@ -110,6 +122,7 @@ const CreateUUID = () => {
     return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
   });
 };
+
 // 卡片列表置頂
 const CardListScrollToDown = () => {
   nextTick(() => {
@@ -126,7 +139,28 @@ const CardListScrollToDown = () => {
 const OpenFBCtrlDrawer = async () => {
   openDrawer.value = true;
 };
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
+// 儲存商品卡片
+const SaveProductCard = (() => {
+  const keys = $storage.keys;
+  const obj = {
+    cardList: productCardList
+  };
+  $storage.Set(keys.productCard, obj);
+  console.log("product save");
+});
+
+// 取得商品卡片
+const GetroductCard = (() => {
+  const keys = $storage.keys;
+  const obj = $storage.Get(keys.productCard);
+  if (obj && obj.cardList) {
+    productCardList.length = 0;
+    productCardList.push(...obj.cardList);
+  }
+  console.log("product get");
+});
 </script>
 
 <style lang="scss" scoped>
