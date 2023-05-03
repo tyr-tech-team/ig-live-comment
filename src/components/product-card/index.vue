@@ -7,7 +7,7 @@
     .row-item
       p {{"商品名稱："}}
       aInput(
-        v-model:value="props.productInfo.name"
+        v-model:value="props.cardInfo.name"
         style="width: 500px"
         size="small"
         @change="EmitChange"
@@ -15,7 +15,7 @@
     .row-item
       p {{"起標金額："}}
       aInputNumber(
-        v-model:value="props.productInfo.basicPrice"
+        v-model:value="props.cardInfo.basicPrice"
         :max="10000000" :min="0"
         :formatter="value => FormatNumber(`${value}`)"
         :parser="value => IntStyle(value.replace(/$s?|(,*)/g, ''))"
@@ -25,7 +25,7 @@
       )
       p.left-gap {{"金額間距："}}
       aInputNumber(
-        v-model:value="props.productInfo.increase"
+        v-model:value="props.cardInfo.increase"
         :max="10000000" :min="0"
         :formatter="value => FormatNumber(`${value}`)"
         :parser="value => IntStyle(value.replace(/$s?|(,*)/g, ''))"
@@ -36,11 +36,11 @@
       )
       p.left-gap {{"最高金額："}}
       aInputNumber(
-        v-model:value="props.productInfo.TopPrice"
-        :max="10000000" :min="props.productInfo.basicPrice + props.productInfo.increase"
+        v-model:value="props.cardInfo.topPrice"
+        :max="10000000" :min="props.cardInfo.basicPrice + props.cardInfo.increase"
         :formatter="value => FormatNumber(`${value}`)"
         :parser="value => IntStyle(value.replace(/$s?|(,*)/g, ''))"
-        :step="500"
+        :step="props.cardInfo.increase"
         style="width: 110px"
         size="small"
         @change="EmitChange"
@@ -48,10 +48,10 @@
     .row-item
       p
         span {{ `開始時間：` }}
-        span.time-box(v-show="props.productInfo.startAt") {{ NumToDay(props.productInfo.startAt,'HH:mm:ss')}}
+        span.time-box(v-show="props.cardInfo.startAt") {{ NumToDay(props.cardInfo.startAt,'HH:mm:ss')}}
       p.left-gap
         span {{ `結束時間：` }}
-        span.time-box(v-show="props.productInfo.endAt") {{ NumToDay(props.productInfo.endAt,'HH:mm:ss')}}
+        span.time-box(v-show="props.cardInfo.endAt") {{ NumToDay(props.cardInfo.endAt,'HH:mm:ss')}}
       p.left-gap.big(v-if="winner")
         span {{ winner.isWin? `得標者 ${winner.userName}：` : `目前出價 ${winner.userName}： ` }}
         span {{ FormatNumber(winner.price)}}
@@ -81,7 +81,7 @@ import { Modal, notification } from "ant-design-vue";
 import { ref, createVNode, computed, getCurrentInstance, nextTick } from "vue";
 
 const props = defineProps({
-  productInfo: { // 商品資訊
+  cardInfo: { // 商品資訊
     type: Object,
     default: () => ({})
   },
@@ -101,13 +101,13 @@ const inTimeRangeCommentList = computed(() => {
   return props.commentNumList.filter((comment) => {
     const {timestamp} = comment;
     // 開始時間不存在
-    if (!props.productInfo.startAt) return false;
+    if (!props.cardInfo.startAt) return false;
     // 小於開始時間
-    if (timestamp < props.productInfo.startAt) return false; 
+    if (timestamp < props.cardInfo.startAt) return false; 
     // 結束時間不存在
-    if (!props.productInfo.endAt) return true;
+    if (!props.cardInfo.endAt) return true;
     // 大於開始時間
-    if (timestamp > props.productInfo.endAt) return false;
+    if (timestamp > props.cardInfo.endAt) return false;
     return true; 
   });
 });
@@ -115,12 +115,12 @@ const inTimeRangeCommentList = computed(() => {
 // 按出價階級的訊息
 const levelCommentList = computed(() => {
   const _arr = [];
-  const { basicPrice, increase, TopPrice } = props.productInfo;
+  const { basicPrice, increase, topPrice } = props.cardInfo;
   let nextPrice = basicPrice + increase;
-  for (const m of props.commentNumList) {
-  // TODO for (const m of inTimeRangeCommentList.value) {
+  // for (const m of props.commentNumList) {
+  for (const m of inTimeRangeCommentList.value) {
     // 暫時得標金額
-    const okPrice = m.nums.filter((i) => i <= TopPrice && i === nextPrice); // 不超過最大金額，等於預計金額
+    const okPrice = m.nums.filter((i) => i <= topPrice && i === nextPrice); // 不超過最大金額，等於預計金額
     if (okPrice.length > 0) {
       _arr.push({ ...m, price: nextPrice});
       nextPrice += increase;
@@ -133,7 +133,7 @@ const winner = computed( () => {
   UpdateWinner();
   const _winner = levelCommentList.value[levelCommentList.value.length - 1];
   if (!_winner) return;
-  let isWin = _winner.price === props.productInfo.TopPrice || props.productInfo.endAt;
+  let isWin = _winner.price === props.cardInfo.topPrice || !!props.cardInfo.endAt;
   return {..._winner, isWin};
 });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -172,12 +172,9 @@ const AskDelete = async() => {
 };
 const UpdateWinner  = () =>  {
   nextTick( () => {
-    props.productInfo.winner = winner.value;
-    console.log("update winer");
+    props.cardInfo.winner = winner.value;
     EmitChange();
   });
-  // setTimeout(() => {
-  // }, 50);
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 格式金錢化，三位一點

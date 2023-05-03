@@ -4,18 +4,25 @@
   .ctrl-box
     .countdown-area
       LiveCountdown(
-        :productCardList="productCardList"
+        :productCardList="productData.list"
         @on-product-change="OnProductSelectChange"
+        @on-save="SaveProductCard"
       )
     .card-area
-      aButton(type="primary" @click="CreateProductCard") {{"新增商品"}}
+      .btn-area 
+        aButton(type="primary" @click="CreateProductCard") {{"新增商品"}}
+        aButton(
+          type="primary"
+          :disalbed="productData.list.length === 0"
+          @click="DeleteAllProductCard"
+        ) {{"刪除全部商品"}}
       .card-list(ref="CardList")
-        .card-item(v-for="productInfo of productCardList" :key="productInfo.uuid") 
+        .card-item(v-for="cardInfo of productData.list" :key="cardInfo.uuid") 
           ProductCard(
-            :productInfo="productInfo" 
+            :cardInfo="cardInfo" 
             :commentNumList="commentNumList"
-            :colseDisabled="selectedProductId === productInfo.uuid"
-            @on-delete="DeleteProductCard(productInfo.uuid)"
+            :colseDisabled="selectedProductId === cardInfo.uuid"
+            @on-delete="DeleteProductCard(cardInfo.uuid)"
             @on-change="ChangeProductCard"
           )
     .comments-area 
@@ -26,23 +33,25 @@ FbCtrlsDrawer(ref="FbCtrlsDrawer1" v-model:isOpen="openDrawer")
 </template>
 
 <script setup>
-import throttle from "lodash/throttle";
+import debounce from "lodash/debounce";
 import FbCtrlsDrawer from "@/components/fb-ctrls-drawer/index.vue"; // FB IG 控制抽屜
 import LiveCountdown from "@/components/live-countdown/index.vue"; // 倒數計時器
 import ProductCard from "@/components/product-card/index.vue"; // 商品卡片
 import IgCommentsTable from "@/components/fb-ctrls-drawer/ig-comments-table.vue"; // 留言 Table
-
-import { ref, computed, nextTick, reactive, onMounted, onUnmounted, getCurrentInstance } from "vue";
+import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
+import { Modal } from "ant-design-vue";
+import { ref, computed, nextTick, reactive, onMounted, onUnmounted, getCurrentInstance,createVNode } from "vue";
 
 const openDrawer =ref(false); // 開啟抽屜
 const {proxy: {$storage}} = getCurrentInstance();
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
 // 同步訊息列表
 const FbCtrlsDrawer1 = ref(null);
 const isMounted = ref(false);
 const CardList = ref(null);
 const selectedProductId = ref("");
-const productCardList = reactive([]); // 商品卡片列表
+const productData = reactive({ list: []}); // 商品卡片列表
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 onMounted(() => {
@@ -56,6 +65,7 @@ onUnmounted(()=>{
 });
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 留言列表
 const commentList = computed(() => {
   if (!isMounted.value ) return [];
   return FbCtrlsDrawer1.value.commentList;
@@ -74,15 +84,11 @@ const commentNumList = computed(() => {
     .filter((i) => i.nums );
 });
 
-const reverseCommentList = computed(() => {
-  if (!isMounted.value ) return [];
-  const _list = commentList.value;
-  return _list;
-});
 // 訊息 +1 的列表
 const add1CommentList = computed(() => {
   return commentList.value.filter((comment) => comment.text.includes("+1")).reverse(); // 反轉
 });
+
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 建立新卡片
 const OnProductSelectChange = (_selectedProductId) => {
@@ -92,7 +98,7 @@ const OnProductSelectChange = (_selectedProductId) => {
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 新增商品卡片
 const CreateProductCard = () => {
-  productCardList.push({
+  productData.list.push({
     uuid: CreateUUID(), // 唯一ID
     startAt: "", // 開始時間
     endAt: "", // 結束時間
@@ -107,18 +113,38 @@ const CreateProductCard = () => {
   SaveProductCard();
 };
 
+// 刪除全部商品
+const DeleteAllProductCard = async() => {
+  const isOk = await new Promise((resolve) =>
+    Modal.confirm({
+      title: "刪除確認",
+      icon: createVNode(ExclamationCircleOutlined),
+      content: "確定要刪除全部商品嗎？",
+      okText: "刪除",
+      cancelText: "取消",
+      onOk() {resolve(true);},
+      onCancel() {resolve(false);},
+    })
+  );
+  if (isOk) {
+    productData.list = [];
+    SaveProductCard();
+  }
+  
+};
 
 // 刪除商品卡片
 const DeleteProductCard = (uuid) => {
-  const findIndex = productCardList.findIndex((i) => i.uuid === uuid);
-  if (findIndex > -1)  productCardList.splice(findIndex, 1);
+  const findIndex = productData.list.findIndex((i) => i.uuid === uuid);
+  if (findIndex > -1)  productData.list.splice(findIndex, 1);
   SaveProductCard();
 };
+
 // 商品卡片變更
-const ChangeProductCard = throttle(function () {
-  console.log("change");
+const ChangeProductCard = debounce(function () {
   SaveProductCard();
-}, 50, { leading: true, trailing: false });
+}, 10);
+
 // 生成唯一ID
 const CreateUUID = () => {
   let d = Date.now();
@@ -148,14 +174,16 @@ const OpenFBCtrlDrawer = async () => {
   openDrawer.value = true;
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-
+let updateLock = false;
 // 儲存商品卡片
 const SaveProductCard = (() => {
+  updateLock = true;
   const keys = $storage.keys;
   const obj = {
-    cardList: productCardList
+    cardList: productData.list
   };
   $storage.Set(keys.productCard, obj);
+  updateLock = false;
 });
 
 // 取得商品卡片
@@ -163,10 +191,49 @@ const GetroductCard = (() => {
   const keys = $storage.keys;
   const obj = $storage.Get(keys.productCard);
   if (obj && obj.cardList) {
-    productCardList.length = 0;
-    productCardList.push(...obj.cardList);
+    if (updateLock) return;
+    SynchronizeProductCardList(obj.cardList);
   }
 });
+
+// 同步商品卡片列表
+const SynchronizeProductCardList = (cardList) => {
+  const idList = cardList.map((i) => i.uuid);
+  // 移除差異
+  for (const cardItem of productData.list ) {
+    // 不存在移除
+    if (!idList.includes(cardItem.uuid)) {
+      const removeIndex = productData.list.findIndex((i) => i.uuid === cardItem.uuid);
+      productData.list.splice(removeIndex, 1);
+    }
+  }
+  // 取得來源同步
+  for (const cardItem of cardList) {
+    const findCard = productData.list.find((i) => i.uuid === cardItem.uuid);
+    // 不存在，插入
+    if (!findCard) {
+      productData.list.push(cardItem);
+      continue;
+    }
+    // 存在，刷新 
+    ObjectEqual(findCard, cardItem);
+  }
+};
+
+// object 值互等
+const ObjectEqual = (aObj, bObj) => {
+  if (Object.is(aObj, bObj)) return;
+  if (!isObject(bObj)) return;
+  for (const key in aObj) {
+    if (isObject(bObj[key])) {
+      ObjectEqual(aObj[key], bObj[key]);
+    } else {
+      aObj[key] = bObj[key];
+    }
+  }
+};
+// check object
+const isObject = (value) => Object.prototype.toString.call(value) === "[object Object]";
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 開始商品卡片刷新循環
@@ -217,6 +284,11 @@ const DeleteProductRefreshInterval = () => {
 }
 // 組件
 #Home {
+  .btn-area {
+    display: flex;
+    justify-content: space-between;
+    gap: 50px;
+  }
   .card-list {
     // max-height: 500px;
     overflow: auto;

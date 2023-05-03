@@ -73,15 +73,18 @@ const selectPageId = ref(""); // 選中粉專
 const selectBusinessId = ref(""); // 選中IG商業帳戶(專業帳戶)ID
 const selectLiveMediaId = ref(""); // 選中直播
 const count = ref(0); // 選中直播
-let commentsInterval = null; // 取得留言循環
+let igCommentsInterval = null; // 取得IG留言循環
+let commentsInterval = null; // 常態取得留言循環
 const isCommentsWatch = ref(false);
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 onMounted(()=> {
-  GetHistoryComments();
+  // GetHistoryComments();
+  CreateCommentsInterval();
 });
 onUnmounted(()=>{
-  DeleteInterval();
+  DeleteIgCommentsInterval();
+  DeleteCommentsInterval();
 });
 // Init ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
@@ -126,21 +129,24 @@ const DefaultFlow = async () => {
 // 開啟直播留言監聽
 const StratWatchLiveComments = () => {
   if (!selectLiveMediaId.value) return false;
-  CreateInterval();
+  CreateIgCommentsInterval();
 };
 
 // 停止直播留言監聽
 const StopWatchLiveComments = () => {
-  DeleteInterval();
+  DeleteIgCommentsInterval();
 };
 
 // 清除監聽資料
 const ClearLiveComments = () => {
-  DeleteInterval();
+  DeleteIgCommentsInterval();
   commentList.value = [];
 };
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+let updateLock = false;
 // 合併留言
-const MergeComments = async () => {
+const MergeIgComments = async () => {
+  updateLock = true;
   const _commentList = await GetIGLiveComments();
   _commentList.reverse(); // 反轉
   let _count = 0;
@@ -151,9 +157,10 @@ const MergeComments = async () => {
     _count++;
   }
   if (_count > 0) {
-    WriteCommentsHistoryToStorage(commentList.value);
+    WriteCommentsHistoryToStorage();
   }
 };
+
 // 留言寫入localstorage
 const WriteCommentsHistoryToStorage = () => {
   const commentKey = `${$moment().format("YYYYMMDD")}`;
@@ -161,6 +168,7 @@ const WriteCommentsHistoryToStorage = () => {
   obj[commentKey] = commentList.value;
   const keys = $storage.keys;
   $storage.Set(keys.commentsHistory, obj);
+  updateLock = false;
 };
 
 // 取得歷史留言
@@ -168,8 +176,19 @@ const GetHistoryComments = () => {
   const keys =  $storage.keys;
   const commentKey = `${$moment().format("YYYYMMDD")}`;
   const obj = $storage.Get(keys.commentsHistory) || [];
-  commentList.value = obj?.[commentKey] || [];
+  const _commentList = obj?.[commentKey] || [];
+  if (updateLock) return;
+  if (_commentList.length === 0) {
+    commentList.value = [];
+    return;
+  }
+  for (const item of _commentList) {
+    const find = commentList.value.find((i)=> i.id === item.id);
+    if (!find) commentList.value.push(item);
+  }
+  // commentList.value = _commentList;
 };
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 清除快取留言
 const ClearCommentsHistory = async()  => {
   const isOk = await new Promise((resolve) =>
@@ -186,27 +205,39 @@ const ClearCommentsHistory = async()  => {
   if (!isOk) return;
   const keys = $storage.keys;
   $storage.Remove(keys.commentsHistory);
-  GetHistoryComments();
-  DeleteInterval();
+  commentList.value = [];
+  DeleteIgCommentsInterval();
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-// 開始循環
-const CreateInterval = async () => {
-  await MergeComments();
-  if (commentsInterval) return;
+// 開始讀取IG留言循環
+const CreateIgCommentsInterval = async () => {
+  await MergeIgComments();
+  if (igCommentsInterval) return;
   isCommentsWatch.value = true;
-  commentsInterval = setInterval(async() => {
-    await MergeComments();
+  igCommentsInterval = setInterval(async() => {
+    await MergeIgComments();
   }, 2000);
 };
 
-// 銷毀循環
-const DeleteInterval = () => {
+// 銷毀IG留言循環
+const DeleteIgCommentsInterval = () => {
   isCommentsWatch.value = false;
+  if(igCommentsInterval) clearInterval(igCommentsInterval);
+  igCommentsInterval = null;
+};
+
+// 取得留言
+const CreateCommentsInterval = async () => {
+  GetHistoryComments();
+  commentsInterval = setInterval(async() => {
+    GetHistoryComments();
+  }, 1000);
+};
+// 銷毀留言循環
+const DeleteCommentsInterval = () => {
   if(commentsInterval) clearInterval(commentsInterval);
   commentsInterval = null;
 };
-
 // Function ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 取得狀態
 const ClickStatus = async () => {

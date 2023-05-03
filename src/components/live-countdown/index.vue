@@ -54,6 +54,11 @@
       :countdownSecond="countdownSecond"
       @on-complete="OnCountdownComplete"
     )
+  //- pre {{ currentProductInfo }}
+  .row-item(v-if="currentProductInfo && currentProductInfo.winner")
+    p
+      span {{ currentProductInfo.winner.isWin? `得標者 ${currentProductInfo.winner.userName}：` : `目前出價 ${currentProductInfo.winner.userName}： ` }}
+      span {{ FormatNumber(currentProductInfo.winner.price)}}
 </template>
 
 <script setup>
@@ -97,12 +102,14 @@ const currentProductInfo = computed(() => {
   return props.productCardList.find((i) => i.uuid === selectProductId.value) || null;
 });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const emit = defineEmits(["on-product-change", "on-start", "on-complete", "on-cancel"]);
+const emit = defineEmits(["on-product-change", "on-save",]);
 // 選擇商品變動
 const EmitProductChange = () => {
   emit("on-product-change", selectProductId.value);
 };
-
+const EmitSave = () => {
+  emit("on-save");
+};
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 倒數計時初始化
 const InitCountdown = () => {
@@ -168,13 +175,14 @@ const ClickReset = () => {
   isLock.value = false;
   ResetProductTime();
   InitCountdown();
+  EmitSave();
 };
 
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 預備備第一次開始 
 const OnPrepareStart = () => {
-  // TODO
+  ResetProductTime();
 };
 // 預備備 完成
 const OnPrepareComplete = () => {
@@ -200,19 +208,32 @@ const ResetProductTime = () => {
   currentProductInfo.value.startAt = "";
   currentProductInfo.value.endAt = "";
   currentProductInfo.value.isComplete = false;
+  EmitSave();
 };
 // 設定商品開始時間
 const SetProductStartAt = () => {
   if (!currentProductInfo.value) return;
   currentProductInfo.value.startAt = (new Date().valueOf()/1000)^0;
+  EmitSave();
 };
 // 設定商品結束時間
 const SetProdcutEndAt = () => {
   if (!currentProductInfo.value) return;
   currentProductInfo.value.endAt = (new Date().valueOf()/1000)^0;
   currentProductInfo.value.isComplete = true;
+  EmitSave();
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 格式金錢化，三位一點
+const FormatNumber = (num, max = 999999999999999) => {
+  let _num = Number(num).toString();
+  if (_num > max) _num = max;
+  const parts = _num.split(".");
+  parts[0] = `${parts[0]}`.replace(/\B(?=(\d{3})+(?!\d))/g, ","); // 設數字３位','
+  return parts.join(".");
+};
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
 InitCountdown();
 </script>
 
