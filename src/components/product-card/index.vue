@@ -172,7 +172,8 @@ const AskDelete = async() => {
 };
 const UpdateWinner  = () =>  {
   nextTick( () => {
-    props.productInfo.winner = winner();
+    props.productInfo.winner = winner.value;
+    console.log("update winer");
     EmitChange();
   });
   // setTimeout(() => {

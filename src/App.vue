@@ -32,7 +32,7 @@ import LiveCountdown from "@/components/live-countdown/index.vue"; // 倒數計�
 import ProductCard from "@/components/product-card/index.vue"; // 商品卡片
 import IgCommentsTable from "@/components/fb-ctrls-drawer/ig-comments-table.vue"; // 留言 Table
 
-import { ref, computed, nextTick, reactive, onMounted, getCurrentInstance } from "vue";
+import { ref, computed, nextTick, reactive, onMounted, onUnmounted, getCurrentInstance } from "vue";
 
 const openDrawer =ref(false); // 開啟抽屜
 const {proxy: {$storage}} = getCurrentInstance();
@@ -44,10 +44,18 @@ const CardList = ref(null);
 const selectedProductId = ref("");
 const productCardList = reactive([]); // 商品卡片列表
 
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 onMounted(() => {
   GetroductCard();
+  CreateProductRefreshInterval();
   isMounted.value = true;
 });
+
+onUnmounted(()=>{
+  DeleteProductRefreshInterval();
+});
+
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const commentList = computed(() => {
   if (!isMounted.value ) return [];
   return FbCtrlsDrawer1.value.commentList;
@@ -108,8 +116,9 @@ const DeleteProductCard = (uuid) => {
 };
 // 商品卡片變更
 const ChangeProductCard = throttle(function () {
+  console.log("change");
   SaveProductCard();
-}, 200, { leading: true, trailing: false });
+}, 50, { leading: true, trailing: false });
 // 生成唯一ID
 const CreateUUID = () => {
   let d = Date.now();
@@ -127,7 +136,6 @@ const CreateUUID = () => {
 const CardListScrollToDown = () => {
   nextTick(() => {
     const el = CardList.value;
-    console.dir(el);
     el.scrollBy({
       top: el.scrollHeight,
       behavior: "smooth"
@@ -148,7 +156,6 @@ const SaveProductCard = (() => {
     cardList: productCardList
   };
   $storage.Set(keys.productCard, obj);
-  console.log("product save");
 });
 
 // 取得商品卡片
@@ -159,8 +166,25 @@ const GetroductCard = (() => {
     productCardList.length = 0;
     productCardList.push(...obj.cardList);
   }
-  console.log("product get");
 });
+
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+// 開始商品卡片刷新循環
+let productInterval = null; // 取得留言循環
+const CreateProductRefreshInterval = async () => {
+  if (productInterval) return;
+  GetroductCard();
+  productInterval = setInterval(async() => {
+    GetroductCard();
+  }, 1000);
+};
+
+// 銷毀商品卡片刷新循環
+const DeleteProductRefreshInterval = () => {
+  if(productInterval) clearInterval(productInterval);
+  productInterval = null;
+};
+
 </script>
 
 <style lang="scss" scoped>
