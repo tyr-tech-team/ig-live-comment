@@ -44,8 +44,8 @@ import { ref, computed, nextTick, reactive, onMounted, onUnmounted, getCurrentIn
 
 const openDrawer =ref(false); // 開啟抽屜
 const {proxy: {$storage}} = getCurrentInstance();
-// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 同步訊息列表
 const FbCtrlsDrawer1 = ref(null);
 const isMounted = ref(false);
@@ -55,13 +55,12 @@ const productData = reactive({ list: []}); // 商品卡片列表
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 onMounted(() => {
-  GetroductCard();
-  CreateProductRefreshInterval();
+  CreateProductRefreshInterval(); // 商品卡片刷新循環
   isMounted.value = true;
 });
 
 onUnmounted(()=>{
-  DeleteProductRefreshInterval();
+  DeleteProductRefreshInterval(); // 移除商品卡片刷新循環
 });
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -71,7 +70,7 @@ const commentList = computed(() => {
   return FbCtrlsDrawer1.value.commentList;
 });
 
-// 過濾有數字的訊息
+// 過濾擁有數字的訊息
 const commentNumList = computed(() => {
   if (!isMounted.value ) return [];
   return FbCtrlsDrawer1.value.commentList
@@ -82,11 +81,6 @@ const commentNumList = computed(() => {
       };
     })
     .filter((i) => i.nums );
-});
-
-// 訊息 +1 的列表
-const add1CommentList = computed(() => {
-  return commentList.value.filter((comment) => comment.text.includes("+1")).reverse(); // 反轉
 });
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
