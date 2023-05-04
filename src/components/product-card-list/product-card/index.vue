@@ -78,7 +78,7 @@
 <script setup>
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { Modal, notification } from "ant-design-vue";
-import { ref, createVNode, computed, getCurrentInstance, nextTick } from "vue";
+import { ref, createVNode, computed, getCurrentInstance, nextTick, watch } from "vue";
 
 const props = defineProps({
   cardInfo: { // 商品資訊
@@ -131,11 +131,13 @@ const levelCommentList = computed(() => {
 
 const winner = computed( () => {
   UpdateWinner();
+  if (levelCommentList.value.length === 0) return;
   const _winner = levelCommentList.value[levelCommentList.value.length - 1];
   if (!_winner) return;
   let isWin = _winner.price === props.cardInfo.topPrice || !!props.cardInfo.endAt;
   return {..._winner, isWin};
 });
+
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const emit = defineEmits(["on-delete", "on-change"]);
 // 刪除事件

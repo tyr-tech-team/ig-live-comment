@@ -50,6 +50,7 @@ aDrawer(
 </template>
 
 <script setup>
+import debounce from "lodash/debounce";
 import { message, Modal } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { ref, createVNode, getCurrentInstance, onMounted, onUnmounted, nextTick } from "vue";
@@ -76,10 +77,11 @@ const count = ref(0); // 選中直播
 let igCommentsInterval = null; // 取得IG留言循環
 let commentsInterval = null; // 常態取得留言循環
 const isCommentsWatch = ref(false);
-
+// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+defineExpose({ commentList });
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 onMounted(()=> {
-  // GetHistoryComments();
+  // GetComments();
   CreateCommentsInterval();
 });
 onUnmounted(()=>{
@@ -143,10 +145,10 @@ const ClearLiveComments = () => {
   commentList.value = [];
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-let updateLock = false;
+const updateLock = ref(false);
 // 合併留言
 const MergeIgComments = async () => {
-  updateLock = true;
+  updateLock.value = true;
   const _commentList = await GetIGLiveComments();
   _commentList.reverse(); // 反轉
   let _count = 0;
@@ -157,27 +159,34 @@ const MergeIgComments = async () => {
     _count++;
   }
   if (_count > 0) {
-    WriteCommentsHistoryToStorage();
+    SaveComments();
   }
 };
 
 // 留言寫入localstorage
-const WriteCommentsHistoryToStorage = () => {
+const SaveComments = () => {
   const commentKey = `${$moment().format("YYYYMMDD")}`;
   const obj = {};
   obj[commentKey] = commentList.value;
   const keys = $storage.keys;
   $storage.Set(keys.commentsHistory, obj);
-  updateLock = false;
+  SetUnLock();
 };
 
+// 解鎖
+const SetUnLock = debounce(function () {
+  updateLock.value = false;
+}, 1000);
+
+
 // 取得歷史留言
-const GetHistoryComments = () => {
+const GetComments = () => {
+  if (updateLock.value) return;
   const keys =  $storage.keys;
   const commentKey = `${$moment().format("YYYYMMDD")}`;
   const obj = $storage.Get(keys.commentsHistory) || [];
   const _commentList = obj?.[commentKey] || [];
-  if (updateLock) return;
+  if (updateLock.value) return;
   if (_commentList.length === 0) {
     commentList.value = [];
     return;
@@ -186,7 +195,6 @@ const GetHistoryComments = () => {
     const find = commentList.value.find((i)=> i.id === item.id);
     if (!find) commentList.value.push(item);
   }
-  // commentList.value = _commentList;
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 清除快取留言
@@ -228,9 +236,9 @@ const DeleteIgCommentsInterval = () => {
 
 // 取得留言
 const CreateCommentsInterval = async () => {
-  GetHistoryComments();
+  GetComments();
   commentsInterval = setInterval(async() => {
-    GetHistoryComments();
+    GetComments();
   }, 1000);
 };
 // 銷毀留言循環
@@ -366,8 +374,7 @@ const Rfc3339ToDay = (date, format = "YYYY/MM/DD") => {
   return $moment(date).format(format);
 };
 const DayToRfc3339 = (rfc) => $moment(rfc).format();
-// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-defineExpose({ commentList });
+
 </script>
 
 <style lang="scss" scoped>

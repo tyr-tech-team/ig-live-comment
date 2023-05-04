@@ -1,6 +1,6 @@
 <template lang="pug">
 //- 請填寫功能描述👈
-#IgCommentsTable(ref="igCommentsTable")
+#IgCommentsTable(ref="El_IgCommentsTable")
   .table-row.table-header
     p {{"時間"}}
     p {{"使用者"}}
@@ -24,7 +24,7 @@ const props = defineProps({
   }
 });
 const {proxy: {$moment}} = getCurrentInstance();
-const igCommentsTable = ref(null);
+const El_IgCommentsTable = ref(null);
 onMounted(() => {
   TableScrollBottom();
 });
@@ -39,7 +39,7 @@ watch(
 // 滑至最底
 const TableScrollBottom = () => {
   nextTick(() => {
-    const el = igCommentsTable.value;
+    const el = El_IgCommentsTable.value;
     el.scrollTop = el.scrollHeight;
   });
 };

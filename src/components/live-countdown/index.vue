@@ -6,7 +6,7 @@
       .time-set 
         aSelect(
           v-model:value="selectProductId"
-          style="width: 100%"
+          style="width: 145px"
           allowClear
           placeholder="請選擇商品"
           :disabled="isLock" 
@@ -56,7 +56,7 @@
     )
   //- pre {{ currentProductInfo }}
   .row-item(v-if="currentProductInfo && currentProductInfo.winner")
-    p
+    p.winner
       span {{ currentProductInfo.winner.isWin? `得標者 ${currentProductInfo.winner.userName}：` : `目前出價 ${currentProductInfo.winner.userName}： ` }}
       span {{ FormatNumber(currentProductInfo.winner.price)}}
 </template>
@@ -279,6 +279,11 @@ InitCountdown();
         font-weight: bold;
       }
     }
+  }
+  .winner {
+    font-weight: 900;
+    font-size: 14px;
+    color: #4F67AF;
   }
 }
 </style>
