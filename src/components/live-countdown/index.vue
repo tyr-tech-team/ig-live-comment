@@ -54,7 +54,6 @@
       :countdownSecond="countdownSecond"
       @on-complete="OnCountdownComplete"
     )
-  //- pre {{ currentProductInfo }}
   .row-item(v-if="currentProductInfo && currentProductInfo.winner")
     p.winner
       span {{ currentProductInfo.winner.isWin? `得標者 ${currentProductInfo.winner.userName}：` : `目前出價 ${currentProductInfo.winner.userName}： ` }}
@@ -71,6 +70,10 @@ const props = defineProps({
     type: Array,
     default: () => ([])
   },
+  countdownInfoObj: {
+    type: Object,
+    default: () => ({})
+  }
 });
 const CountdownCard1 = ref(null);
 const CountdownCard2 = ref(null);
@@ -204,24 +207,36 @@ const OnCountdownComplete = () => {
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 初始時間
 const ResetProductTime = () => {
-  if (!currentProductInfo.value) return;
-  currentProductInfo.value.startAt = "";
-  currentProductInfo.value.endAt = "";
-  currentProductInfo.value.isComplete = false;
+  // if (!currentProductInfo.value) return;
+  if (!selectProductId.value) return;
+  if (!props.countdownInfoObj[selectProductId.value]) {
+    props.countdownInfoObj[selectProductId.value] = {
+      startAt: "",
+      endAt: ""
+    };
+  }
+  props.countdownInfoObj[selectProductId.value].startAt = "";
+  props.countdownInfoObj[selectProductId.value].endAt = "";
   EmitSave();
 };
 // 設定商品開始時間
 const SetProductStartAt = () => {
-  if (!currentProductInfo.value) return;
-  currentProductInfo.value.startAt = (new Date().valueOf()/1000)^0;
+  if (!props.countdownInfoObj[selectProductId.value]) {
+    props.countdownInfoObj[selectProductId.value] = {
+      startAt: "",
+      endAt: ""
+    };
+  }
+  props.countdownInfoObj[selectProductId.value].startAt = (new Date().valueOf()/1000)^0;
   EmitSave();
 };
 // 設定商品結束時間
 const SetProdcutEndAt = () => {
-  if (!currentProductInfo.value) return;
-  currentProductInfo.value.endAt = (new Date().valueOf()/1000)^0;
-  currentProductInfo.value.isComplete = true;
-  EmitSave();
+  console.log("end", props.countdownInfoObj?.[selectProductId.value]);
+  if (!props.countdownInfoObj?.[selectProductId.value]) return;
+  props.countdownInfoObj[selectProductId.value].endAt = (new Date().valueOf()/1000)^0;
+  console.log("endset", props.countdownInfoObj?.[selectProductId.value]);
+  currentProductInfo.value.isComplete = true;  EmitSave();
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 格式金錢化，三位一點
@@ -241,7 +256,9 @@ InitCountdown();
 
 // 佈局
 #LiveCountdown {
-  // padding: 10px 0;
+  padding-bottom: 100px;
+  transform: scale(2);
+  transform-origin: 0 0;
 }
 // 組件
 #LiveCountdown {

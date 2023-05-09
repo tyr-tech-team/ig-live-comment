@@ -1,12 +1,14 @@
 // key對應表
 export const keys = {
   theme: "THEME", // @param object，主題
-  commentsHistory: "COMMENTSHISTORY",
-  productCard: "PRODUCTCARD"
+  countdonw: "COUNTDONW", // 計時器資訊
+  productCard: "PRODUCTCARD", // 商品卡片資訊
+  commentsHistory: "COMMENTSHISTORY", // 留言列表
 };
 
 // 設定項目
 export const Set = function (key, valueObj) {
+  console.log("set", key);
   try {
     const _data = JSON.stringify(valueObj);
     localStorage.setItem(key, _data);

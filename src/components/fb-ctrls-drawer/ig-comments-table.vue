@@ -64,7 +64,8 @@ const DownloadCsv = () => {
 // 佈局
 #IgCommentsTable {
   margin-top: 10px;
-  max-height: 400px;
+  max-height: calc(100vh - 160px);
+  height: 100%;
   position: relative;
   overflow: auto;
   border: 1px solid #ccc;
@@ -76,7 +77,7 @@ const DownloadCsv = () => {
   }
   .table-row {
     display: grid;
-    grid-template-columns: 105px 120px 1fr;
+    grid-template-columns: 105px 140px 1fr;
     &:not(:last-child) {
       border-bottom: 1px solid #ccc;
     }

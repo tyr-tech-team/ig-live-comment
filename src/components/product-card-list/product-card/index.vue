@@ -15,7 +15,7 @@
     .row-item
       p {{"起標金額："}}
       aInputNumber(
-        v-model:value="props.cardInfo.basicPrice"
+        v-model:value="cardInfo.basicPrice"
         :max="10000000" :min="0"
         :formatter="value => FormatNumber(`${value}`)"
         :parser="value => IntStyle(value.replace(/$s?|(,*)/g, ''))"
@@ -25,7 +25,7 @@
       )
       p.left-gap {{"金額間距："}}
       aInputNumber(
-        v-model:value="props.cardInfo.increase"
+        v-model:value="cardInfo.increase"
         :max="10000000" :min="0"
         :formatter="value => FormatNumber(`${value}`)"
         :parser="value => IntStyle(value.replace(/$s?|(,*)/g, ''))"
@@ -36,11 +36,11 @@
       )
       p.left-gap {{"最高金額："}}
       aInputNumber(
-        v-model:value="props.cardInfo.topPrice"
-        :max="10000000" :min="props.cardInfo.basicPrice + props.cardInfo.increase"
+        v-model:value="cardInfo.topPrice"
+        :max="10000000" :min="cardInfo.basicPrice + cardInfo.increase"
         :formatter="value => FormatNumber(`${value}`)"
         :parser="value => IntStyle(value.replace(/$s?|(,*)/g, ''))"
-        :step="props.cardInfo.increase"
+        :step="cardInfo.increase"
         style="width: 110px"
         size="small"
         @change="EmitChange"
@@ -48,10 +48,10 @@
     .row-item
       p
         span {{ `開始時間：` }}
-        span.time-box(v-show="props.cardInfo.startAt") {{ NumToDay(props.cardInfo.startAt,'HH:mm:ss')}}
+        span.time-box(v-show="countdownInfo.startAt") {{ NumToDay(countdownInfo.startAt,'HH:mm:ss')}}
       p.left-gap
         span {{ `結束時間：` }}
-        span.time-box(v-show="props.cardInfo.endAt") {{ NumToDay(props.cardInfo.endAt,'HH:mm:ss')}}
+        span.time-box(v-show="countdownInfo.endAt") {{ NumToDay(countdownInfo.endAt,'HH:mm:ss')}}
       p.left-gap.big(v-if="winner")
         span {{ winner.isWin? `得標者 ${winner.userName}：` : `目前出價 ${winner.userName}： ` }}
         span {{ FormatNumber(winner.price)}}
@@ -72,17 +72,20 @@
         p {{commentItem.userId}}
       .no-data(v-show="levelCommentList.length===0")
         p {{"尚未出現有人出價"}}
-        p {{ props.inTimeRangeCommentList }}
 </template>
 
 <script setup>
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { Modal, notification } from "ant-design-vue";
-import { ref, createVNode, computed, getCurrentInstance, nextTick, watch } from "vue";
+import { ref, createVNode, computed, getCurrentInstance, nextTick } from "vue";
 
 const props = defineProps({
   cardInfo: { // 商品資訊
     type: Object,
+    default: () => ({})
+  },
+  countdownInfo: {
+    type:Object,
     default: () => ({})
   },
   commentNumList: { // 留言列表
@@ -98,16 +101,18 @@ const {proxy: {$fb, $moment}} = getCurrentInstance();
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 在時間區間內的訊息
 const inTimeRangeCommentList = computed(() => {
+  const { basicPrice, increase, topPrice } = props.cardInfo;
+  let nextPrice = basicPrice + increase;
   return props.commentNumList.filter((comment) => {
     const {timestamp} = comment;
     // 開始時間不存在
-    if (!props.cardInfo.startAt) return false;
+    if (!props.countdownInfo?.startAt) return false;
     // 小於開始時間
-    if (timestamp < props.cardInfo.startAt) return false; 
+    if (timestamp < props.countdownInfo?.startAt) return false; 
     // 結束時間不存在
-    if (!props.cardInfo.endAt) return true;
+    if (!props.countdownInfo?.endAt) return true;
     // 大於開始時間
-    if (timestamp > props.cardInfo.endAt) return false;
+    if (timestamp > props.countdownInfo?.endAt) return false;
     return true; 
   });
 });
@@ -117,7 +122,6 @@ const levelCommentList = computed(() => {
   const _arr = [];
   const { basicPrice, increase, topPrice } = props.cardInfo;
   let nextPrice = basicPrice + increase;
-  // for (const m of props.commentNumList) {
   for (const m of inTimeRangeCommentList.value) {
     // 暫時得標金額
     const okPrice = m.nums.filter((i) => i <= topPrice && i === nextPrice); // 不超過最大金額，等於預計金額
@@ -131,10 +135,10 @@ const levelCommentList = computed(() => {
 
 const winner = computed( () => {
   UpdateWinner();
-  if (levelCommentList.value.length === 0) return;
+  if (levelCommentList.value.length === 0) return null;
   const _winner = levelCommentList.value[levelCommentList.value.length - 1];
-  if (!_winner) return;
-  let isWin = _winner.price === props.cardInfo.topPrice || !!props.cardInfo.endAt;
+  if (!_winner) return null;
+  let isWin = _winner.price === props.cardInfo.topPrice || !!props.countdownInfo?.endAt;
   return {..._winner, isWin};
 });
 
@@ -173,7 +177,14 @@ const AskDelete = async() => {
   }
 };
 const UpdateWinner  = () =>  {
+  if (props.cardInfo.winner === winner.value) return;
+  if (
+    winner.value && winner.value &&
+    props.cardInfo.winner?.id === winner.value?.id &&
+    props.cardInfo.winner?.isWin === winner.value?.isWin
+  ) return;
   nextTick( () => {
+    console.log("Update winner");
     props.cardInfo.winner = winner.value;
     EmitChange();
   });
@@ -269,7 +280,7 @@ const DayToRfc3339 = (rfc) => $moment(rfc).format();
     }
     .table-row {
       display: grid;
-      grid-template-columns: 105px 120px 100px 1fr 140px;
+      grid-template-columns: 105px 140px 100px 1fr 135px;
       &:not(:last-child) {
         border-bottom: 1px solid #ccc;
       }

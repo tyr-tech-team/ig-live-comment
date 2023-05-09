@@ -46,30 +46,33 @@ aDrawer(
       aButton(size="small" danger @click="ClearCommentsHistory") {{"清除留言"}}
     //- ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
     .status {{`狀態：${isCommentsWatch?'監聽中':'停止監聽'}`}}
-    IgCommentsTable(:commentList="commentList")
+    .table-area
+      IgCommentsTable(:commentList="commentList")
 </template>
 
 <script setup>
 import debounce from "lodash/debounce";
 import { message, Modal } from "ant-design-vue";
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
-import { ref, createVNode, getCurrentInstance, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, createVNode, getCurrentInstance, onUnmounted } from "vue";
 import IgCommentsTable from "./ig-comments-table.vue";
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const props = defineProps({
-  isOpen: {
+  isOpen: { // 是否開啟
     type: Boolean,
     default: false
+  },
+  commentList: { // 留言列表
+    type: Array,
+    default: () => ([])
   }
 });
 const {proxy: {$fb, $moment, $storage}} = getCurrentInstance();
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const fbRes = ref({res: null});  // 回傳
 const appId = ref("1105528194174599"); // TODO harry: "1105528194174599" tyr: "181443171333337" // FB 應用 ID
 const pageList = ref([]); // 粉專列表
 const liveList = ref([]); // 直播列表
-const commentList = ref([]); // 留言列表
 const selectPageId = ref(""); // 選中粉專
 const selectBusinessId = ref(""); // 選中IG商業帳戶(專業帳戶)ID
 const selectLiveMediaId = ref(""); // 選中直播
@@ -77,26 +80,22 @@ const count = ref(0); // 選中直播
 let igCommentsInterval = null; // 取得IG留言循環
 let commentsInterval = null; // 常態取得留言循環
 const isCommentsWatch = ref(false);
+
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-defineExpose({ commentList });
-// ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-onMounted(()=> {
-  // GetComments();
-  CreateCommentsInterval();
-});
 onUnmounted(()=>{
   DeleteIgCommentsInterval();
-  DeleteCommentsInterval();
 });
 // Init ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
 // Emit ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const emit = defineEmits(["update:isOpen"]);
+const emit = defineEmits(["update:isOpen", "merge-comments"]);
 // v-model isOpen update
 const EmitUpdateIsOpen = (value) => {
   emit("update:isOpen", false);
 };
-
+const EmitMergeComments = (_commentList) => {
+  emit("merge-comments", _commentList);
+};
 // Event ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 
 // Flow ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -142,60 +141,19 @@ const StopWatchLiveComments = () => {
 // 清除監聽資料
 const ClearLiveComments = () => {
   DeleteIgCommentsInterval();
-  commentList.value = [];
+  props.commentList = [];
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const updateLock = ref(false);
-// 合併留言
+
 const MergeIgComments = async () => {
-  updateLock.value = true;
   const _commentList = await GetIGLiveComments();
   _commentList.reverse(); // 反轉
-  let _count = 0;
-  for (const _comment of _commentList) {
-    const _findIndex = commentList.value.findIndex((i) => i.id === _comment.id);
-    if (_findIndex >= 0) continue;
-    commentList.value.push(_comment);
-    _count++;
-  }
-  if (_count > 0) {
-    SaveComments();
+  if (_commentList.length > 0) {
+    console.log("ss");
+    EmitMergeComments(_commentList);
   }
 };
 
-// 留言寫入localstorage
-const SaveComments = () => {
-  const commentKey = `${$moment().format("YYYYMMDD")}`;
-  const obj = {};
-  obj[commentKey] = commentList.value;
-  const keys = $storage.keys;
-  $storage.Set(keys.commentsHistory, obj);
-  SetUnLock();
-};
-
-// 解鎖
-const SetUnLock = debounce(function () {
-  updateLock.value = false;
-}, 1000);
-
-
-// 取得歷史留言
-const GetComments = () => {
-  if (updateLock.value) return;
-  const keys =  $storage.keys;
-  const commentKey = `${$moment().format("YYYYMMDD")}`;
-  const obj = $storage.Get(keys.commentsHistory) || [];
-  const _commentList = obj?.[commentKey] || [];
-  if (updateLock.value) return;
-  if (_commentList.length === 0) {
-    commentList.value = [];
-    return;
-  }
-  for (const item of _commentList) {
-    const find = commentList.value.find((i)=> i.id === item.id);
-    if (!find) commentList.value.push(item);
-  }
-};
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 清除快取留言
 const ClearCommentsHistory = async()  => {
@@ -213,7 +171,7 @@ const ClearCommentsHistory = async()  => {
   if (!isOk) return;
   const keys = $storage.keys;
   $storage.Remove(keys.commentsHistory);
-  commentList.value = [];
+  props.commentList = [];
   DeleteIgCommentsInterval();
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -234,18 +192,6 @@ const DeleteIgCommentsInterval = () => {
   igCommentsInterval = null;
 };
 
-// 取得留言
-const CreateCommentsInterval = async () => {
-  GetComments();
-  commentsInterval = setInterval(async() => {
-    GetComments();
-  }, 1000);
-};
-// 銷毀留言循環
-const DeleteCommentsInterval = () => {
-  if(commentsInterval) clearInterval(commentsInterval);
-  commentsInterval = null;
-};
 // Function ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 取得狀態
 const ClickStatus = async () => {
@@ -353,6 +299,7 @@ const GetIGLiveComments = async() => {
     message.error("取得留言失敗");
     return [];
   }
+  if (!data?.data) return [];
   return data.data.map((i) => {
     return {
       id: i.id,
@@ -395,5 +342,9 @@ const DayToRfc3339 = (rfc) => $moment(rfc).format();
     font-weight: 400;
     color: #666b69;
   }
+  .table-area {
+    height: calc(100vh - 400px);
+  }
+
 }
 </style>
