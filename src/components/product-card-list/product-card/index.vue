@@ -57,7 +57,7 @@
         span {{ FormatNumber(winner.price)}}
 
   .level-area
-    .table
+    .table(ref="El_TableList")
       .table-row.table-header
         p {{"時間"}}
         p {{"使用者"}}
@@ -77,7 +77,7 @@
 <script setup>
 import { ExclamationCircleOutlined } from "@ant-design/icons-vue";
 import { Modal, notification } from "ant-design-vue";
-import { ref, createVNode, computed, getCurrentInstance, nextTick } from "vue";
+import { ref, createVNode, computed, getCurrentInstance, nextTick, registerRuntimeCompiler } from "vue";
 
 const props = defineProps({
   cardInfo: { // 商品資訊
@@ -98,6 +98,8 @@ const props = defineProps({
   }
 });
 const {proxy: {$fb, $moment}} = getCurrentInstance();
+
+const El_TableList = ref(null);
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 // 在時間區間內的訊息
 const inTimeRangeCommentList = computed(() => {
@@ -185,8 +187,18 @@ const UpdateWinner  = () =>  {
   ) return;
   nextTick( () => {
     console.log("Update winner");
+    TableScrollBottom();
     props.cardInfo.winner = winner.value;
     EmitChange();
+  });
+};
+
+// 滑至最底
+const TableScrollBottom = () => {
+  nextTick(() => {
+    const el = El_TableList.value;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
   });
 };
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -280,7 +292,7 @@ const DayToRfc3339 = (rfc) => $moment(rfc).format();
     }
     .table-row {
       display: grid;
-      grid-template-columns: 105px 140px 100px 1fr 135px;
+      grid-template-columns: 105px 140px 100px 1fr 140px;
       &:not(:last-child) {
         border-bottom: 1px solid #ccc;
       }

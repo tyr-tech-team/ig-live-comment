@@ -5,11 +5,16 @@
     aTabPane(key="1" tab="計時器")
     aTabPane(key="2" tab="商品卡片與留言")
   .tab-item(v-if="activeKey==='1'")
-    LiveCountdown(
-      :productCardList="productCardList"
-      :countdownInfoObj="countdownInfoObj"
-      @on-save="SetCountdownInfoObj"
-    )
+    .ctrl-btns
+      aButton(type="primary" size="small"  @click="countdownScale += 0.2") {{ "放大" }}
+      aButton(type="primary" danger size="small" @click="countdownScale -= 0.2") {{ "縮小" }}
+      aButton(size="small" @click="countdownScale=2") {{ "恢復大小" }}
+    .countdown-item
+      LiveCountdown(
+        :productCardList="productCardList"
+        :countdownInfoObj="countdownInfoObj"
+        @on-save="SetCountdownInfoObj"
+      )
   .tab-item.card-and-comment-area(v-if="activeKey==='2'")
     .left-area
       ProductCardList(
@@ -46,6 +51,7 @@ const activeKey = ref("1");
 const countdownInfoObj = ref({});
 const productCardList = ref([]);
 const commentList = ref([]);
+const countdownScale = ref(2);
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 const productCardIds = computed(() =>{ // 商品卡片ID列表
@@ -257,6 +263,16 @@ const OpenFBCtrlDrawer = async () => {
 }
 // 組件
 #Home {
+  .ctrl-btns {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 5px;
+  }
+  .countdown-item {
+    padding-bottom: 100px;
+    transform: scale(v-bind(countdownScale));
+    transform-origin: 0 0;
+  }
 }
 </style>
 

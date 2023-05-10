@@ -176,7 +176,6 @@ const ClickPause = () => {
 // 恢復
 const ClickReset = () => {
   isLock.value = false;
-  ResetProductTime();
   InitCountdown();
   EmitSave();
 };
@@ -256,9 +255,7 @@ InitCountdown();
 
 // 佈局
 #LiveCountdown {
-  padding-bottom: 100px;
-  transform: scale(2);
-  transform-origin: 0 0;
+
 }
 // 組件
 #LiveCountdown {

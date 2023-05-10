@@ -6,6 +6,7 @@
     aButton(
       type="primary"
       :disalbed="productCardList.length === 0"
+      danger
       @click="DeleteAllProductCard"
     ) {{"刪除全部商品"}}
   .card-list(ref="El_CardList")

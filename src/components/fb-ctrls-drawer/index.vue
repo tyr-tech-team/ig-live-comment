@@ -70,7 +70,7 @@ const props = defineProps({
 const {proxy: {$fb, $moment, $storage}} = getCurrentInstance();
 
 // ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-const appId = ref("1105528194174599"); // TODO harry: "1105528194174599" tyr: "181443171333337" // FB 應用 ID
+const appId = ref("181443171333337"); // TODO harry: "1105528194174599" tyr: "181443171333337" // FB 應用 ID
 const pageList = ref([]); // 粉專列表
 const liveList = ref([]); // 直播列表
 const selectPageId = ref(""); // 選中粉專

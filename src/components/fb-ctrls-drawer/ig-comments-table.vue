@@ -40,6 +40,7 @@ watch(
 const TableScrollBottom = () => {
   nextTick(() => {
     const el = El_IgCommentsTable.value;
+    if (!el) return;
     el.scrollTop = el.scrollHeight;
   });
 };
