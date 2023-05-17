@@ -56,7 +56,7 @@
     )
   .row-item(v-if="currentProductInfo && currentProductInfo.winner")
     p.winner
-      span {{ currentProductInfo.winner.isWin? `得標者 ${currentProductInfo.winner.userName}：` : `目前出價 ${currentProductInfo.winner.userName}： ` }}
+      span {{ currentProductInfo.winner.isWin? `得標者 ${currentProductInfo.winner.userName}：` : `目前最高出價 ${currentProductInfo.winner.userName}： ` }}
       span {{ FormatNumber(currentProductInfo.winner.price)}}
 </template>
 

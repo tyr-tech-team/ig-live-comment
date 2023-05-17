@@ -53,7 +53,7 @@
         span {{ `結束時間：` }}
         span.time-box(v-show="countdownInfo.endAt") {{ NumToDay(countdownInfo.endAt,'HH:mm:ss')}}
       p.left-gap.big(v-if="winner")
-        span {{ winner.isWin? `得標者 ${winner.userName}：` : `目前出價 ${winner.userName}： ` }}
+        span {{ winner.isWin? `得標者 ${winner.userName}：` : `目前最高出價 ${winner.userName}： ` }}
         span {{ FormatNumber(winner.price)}}
 
   .level-area
